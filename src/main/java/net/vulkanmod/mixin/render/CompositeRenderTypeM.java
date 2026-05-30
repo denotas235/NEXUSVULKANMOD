@@ -1,6 +1,7 @@
 package net.vulkanmod.mixin.render;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import org.joml.Matrix4f;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -45,7 +46,7 @@ public abstract class CompositeRenderTypeM {
                                                             RenderSystem.getModelViewMatrix(),
                                                             new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
                                                             new Vector3f(),
-                                                            RenderSystem.getProjectionMatrix()
+                                                            new Matrix4f()
                                                     );
         MeshData var3 = meshData;
 

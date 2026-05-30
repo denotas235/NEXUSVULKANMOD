@@ -43,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadView;
 import net.vulkanmod.render.chunk.build.frapi.helper.ColorHelper;
 import net.vulkanmod.render.chunk.build.frapi.helper.GeometryHelper;
@@ -58,6 +59,11 @@ public class QuadViewImpl implements QuadView, ModelQuadView {
 	protected Direction nominalFace;
 	/** True when face normal, light face, or geometry flags may not match geometry. */
 	protected boolean isGeometryInvalid = true;
+
+    @Override
+    public QuadAtlas atlas() {
+        return QuadAtlas.BLOCKS;
+    }
 	protected final Vector3f faceNormal = new Vector3f();
 
 	/** Size and where it comes from will vary in subtypes. But in all cases quad is fully encoded to array. */

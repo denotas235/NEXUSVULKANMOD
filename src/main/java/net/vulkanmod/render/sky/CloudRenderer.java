@@ -138,7 +138,7 @@ public class CloudRenderer {
         VRenderSystem.setModelOffset(-xTranslation, 0, -zTranslation);
 
         // TODO
-        Vec3 cloudColor = level.getCloudColor(partialTicks);
+        Vec3 cloudColor = new Vec3(1.0, 1.0, 1.0);
         VRenderSystem.setShaderColor((float) cloudColor.x, (float) cloudColor.y, (float) cloudColor.z, 0.8f);
 
         GraphicsPipeline pipeline = PipelineManager.getCloudsPipeline();

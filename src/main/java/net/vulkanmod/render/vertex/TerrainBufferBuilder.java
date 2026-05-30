@@ -10,6 +10,11 @@ import java.nio.ByteBuffer;
 
 public class TerrainBufferBuilder implements VertexConsumer {
     @Override
+    public VertexConsumer setColor(int rgba) {
+        return this;
+    }
+
+    @Override
     public VertexConsumer setLineWidth(float f) {
         return this;
     }

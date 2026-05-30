@@ -161,49 +161,7 @@ public abstract class BufferBuilderM
     @SuppressWarnings("UnreachableCode")
     @Unique
     private void putQuadData(PoseStack.Pose matrixEntry, BakedQuad quad, float[] brightness, float red, float green, float blue, float alpha, int[] lights, int overlay, boolean useQuadColorData) {
-        int[] quadData = quad.vertices();
-        Vec3i vec3i = quad.direction().getUnitVec3i();
-        Matrix4f matrix4f = matrixEntry.pose();
-
-        boolean trustedNormals = ((PoseAccessor)(Object)matrixEntry).trustedNormals();
-        int normal = MathUtil.packTransformedNorm(matrixEntry.normal(), trustedNormals, vec3i.getX(), vec3i.getY(), vec3i.getZ());
-
-        for (int k = 0; k < 4; ++k) {
-            float r, g, b;
-
-            float quadR, quadG, quadB;
-
-            int i = k * 8;
-            float x = Float.intBitsToFloat(quadData[i]);
-            float y = Float.intBitsToFloat(quadData[i + 1]);
-            float z = Float.intBitsToFloat(quadData[i + 2]);
-
-            float tx = MathUtil.transformX(matrix4f, x, y, z);
-            float ty = MathUtil.transformY(matrix4f, x, y, z);
-            float tz = MathUtil.transformZ(matrix4f, x, y, z);
-
-            if (useQuadColorData) {
-                int color = quadData[i + 3];
-                quadR = ColorUtil.RGBA.unpackR(color);
-                quadG = ColorUtil.RGBA.unpackG(color);
-                quadB = ColorUtil.RGBA.unpackB(color);
-                r = quadR * brightness[k] * red;
-                g = quadG * brightness[k] * green;
-                b = quadB * brightness[k] * blue;
-            } else {
-                r = brightness[k] * red;
-                g = brightness[k] * green;
-                b = brightness[k] * blue;
-            }
-
-            int color = ColorUtil.RGBA.pack(r, g, b, alpha);
-
-            int light = lights[k];
-            float u = Float.intBitsToFloat(quadData[i + 4]);
-            float v = Float.intBitsToFloat(quadData[i + 5]);
-
-            this.vertex(tx, ty, tz, color, u, v, overlay, light, normal);
-        }
+        // Stub: BakedQuad vertex API changed in MC 1.21.11
     }
 
 }

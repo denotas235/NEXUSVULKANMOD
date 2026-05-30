@@ -292,6 +292,7 @@ public class VkGpuDevice implements GpuDevice {
         });
     }
 
+    @Override
     public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
         shaderSourceGetter = shaderSourceGetter == null ? this.defaultShaderSource : shaderSourceGetter;
 

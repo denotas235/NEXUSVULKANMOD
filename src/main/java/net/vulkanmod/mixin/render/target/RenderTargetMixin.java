@@ -37,7 +37,7 @@ public abstract class RenderTargetMixin {
                                                  .createRenderPass(() -> "Blit render target", gpuTextureView, OptionalInt.empty())) {
             renderPass.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
             RenderSystem.bindDefaultUniforms(renderPass);
-            renderPass.bindSampler("InSampler", this.colorTextureView, null);
+            renderPass.bindSampler("InSampler", this.colorTextureView);
             renderPass.draw(0, 3);
         }
     }
