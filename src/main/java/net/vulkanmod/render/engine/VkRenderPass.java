@@ -86,7 +86,6 @@ public class VkRenderPass implements RenderPass {
         }
     }
 
-    @Override
     public void bindSampler(String string, @Nullable GpuTextureView gpuTextureView, @Nullable GpuSampler gpuSampler) {
         if (gpuTextureView == null) {
             this.samplers.remove(string);

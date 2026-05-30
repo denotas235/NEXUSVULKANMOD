@@ -10,7 +10,8 @@ import java.nio.ByteBuffer;
 
 public class TerrainBufferBuilder implements VertexConsumer {
     @Override
-    public void setLineWidth(float f) {
+    public VertexConsumer setLineWidth(float f) {
+        return this;
     }
     private static final Logger LOGGER = Initializer.LOGGER;
     private static final MemoryUtil.MemoryAllocator ALLOCATOR = MemoryUtil.getAllocator(false);

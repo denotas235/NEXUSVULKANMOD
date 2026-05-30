@@ -62,7 +62,7 @@ public class CloudRenderer {
     }
 
     public void renderClouds(ClientLevel level, float ticks, float partialTicks, double camX, double camY, double camZ) {
-        Optional<Integer> optional = level.hasCeiling() ? Optional.empty() : Optional.of(192);
+        Optional<Integer> optional = level.dimensionType().hasCeiling() ? Optional.empty() : Optional.of(192);
 
         if (optional.isEmpty()) {
             return;
@@ -138,7 +138,7 @@ public class CloudRenderer {
         VRenderSystem.setModelOffset(-xTranslation, 0, -zTranslation);
 
         // TODO
-        Vec3 cloudColor = Vec3.fromRGB24(level.cloudColor(partialTicks));
+        Vec3 cloudColor = level.getCloudColor(partialTicks);
         VRenderSystem.setShaderColor((float) cloudColor.x, (float) cloudColor.y, (float) cloudColor.z, 0.8f);
 
         GraphicsPipeline pipeline = PipelineManager.getCloudsPipeline();

@@ -146,7 +146,6 @@ public class VkGpuDevice implements GpuDevice {
         }
     }
 
-    @Override
     public GpuBuffer createBuffer(@Nullable Supplier<String> supplier, int usage, int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("Buffer size must be greater than zero");
@@ -218,8 +217,8 @@ public class VkGpuDevice implements GpuDevice {
     }
 
     @Override
-    public float getMaxSupportedAnisotropy() {
-        return 1.0f;
+    public int getMaxSupportedAnisotropy() {
+        return 1;
     }
 
     @Override

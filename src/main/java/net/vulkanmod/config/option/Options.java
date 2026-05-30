@@ -204,7 +204,7 @@ public abstract class Options {
                                 AttackIndicatorStatus.values(),
                                 value -> mcOptions.attackIndicator().set(value),
                                 () -> mcOptions.attackIndicator().get())
-                                .setTranslator(v -> Component.translatable(v.getSerializedName())),
+                                .setTranslator(v -> Component.translatable(v.getKey())),
                         new SwitchOption(Component.translatable("options.autosaveIndicator"),
                                 value -> mcOptions.showAutosaveIndicator().set(value),
                                 () -> mcOptions.showAutosaveIndicator().get())
@@ -229,7 +229,7 @@ public abstract class Options {
                                 PrioritizeChunkUpdates.values(),
                                 value -> mcOptions.prioritizeChunkUpdates().set(value),
                                 () -> mcOptions.prioritizeChunkUpdates().get())
-                                .setTranslator(v -> Component.translatable(v.getSerializedName()))
+                                .setTranslator(v -> Component.translatable(v.getKey()))
                 }),
                 new OptionBlock("", new Option<?>[]{
                         new CyclingOption<>(Component.translatable("options.particles"),
@@ -237,7 +237,7 @@ public abstract class Options {
                                 value -> mcOptions.particles().set(value),
                                 () -> mcOptions.particles().get())
                                 .setImpact(PerformanceImpact.MEDIUM)
-                                .setTranslator(p -> Component.translatable(p.getSerializedName())),
+                                .setTranslator(p -> Component.translatable(p.getKey())),
                         new CyclingOption<>(Component.translatable("options.renderClouds"),
                                 CloudStatus.values(),
                                 value -> mcOptions.cloudStatus().set(value),

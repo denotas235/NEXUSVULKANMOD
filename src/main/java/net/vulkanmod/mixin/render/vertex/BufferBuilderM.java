@@ -161,7 +161,7 @@ public abstract class BufferBuilderM
     @SuppressWarnings("UnreachableCode")
     @Unique
     private void putQuadData(PoseStack.Pose matrixEntry, BakedQuad quad, float[] brightness, float red, float green, float blue, float alpha, int[] lights, int overlay, boolean useQuadColorData) {
-        int[] quadData = quad.getVertices();
+        int[] quadData = quad.vertices();
         Vec3i vec3i = quad.direction().getUnitVec3i();
         Matrix4f matrix4f = matrixEntry.pose();
 

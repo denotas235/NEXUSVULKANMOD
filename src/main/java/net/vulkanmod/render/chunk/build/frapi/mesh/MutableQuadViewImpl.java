@@ -243,7 +243,6 @@ public abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEm
 		return this;
 	}
 
-	@Override
 	public final MutableQuadViewImpl fromVanilla(int[] quadData, int startIndex) {
 		System.arraycopy(quadData, startIndex, data, baseIndex + HEADER_STRIDE, QUAD_STRIDE);
 		isGeometryInvalid = true;
@@ -270,7 +269,7 @@ public abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEm
 
 	@Override
 	public final MutableQuadViewImpl fromBakedQuad(BakedQuad quad) {
-		fromVanilla(quad.getVertices(), 0);
+		fromVanilla(quad.vertices(), 0);
 //		data[baseIndex + HEADER_BITS] = EncodingFormat.cullFace(0, cullFace);
 		nominalFace(quad.direction());
 		diffuseShade(quad.shade());

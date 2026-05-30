@@ -43,7 +43,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadView;
 import net.vulkanmod.render.chunk.build.frapi.helper.ColorHelper;
 import net.vulkanmod.render.chunk.build.frapi.helper.GeometryHelper;
@@ -282,11 +281,6 @@ public class QuadViewImpl implements QuadView, ModelQuadView {
 		return EncodingFormat.shadeMode(data[baseIndex + HEADER_BITS]);
 	}
 
-	@Override
-	@Override
-public QuadAtlas atlas() {
-return QuadAtlas.BLOCKS;
-}
 
 public final int tintIndex() {
 		return data[baseIndex + HEADER_TINT_INDEX];
@@ -297,7 +291,6 @@ public final int tintIndex() {
 		return data[baseIndex + HEADER_TAG];
 	}
 
-	@Override
 	public final void toVanilla(int[] target, int targetIndex) {
 		System.arraycopy(data, baseIndex + HEADER_STRIDE, target, targetIndex, QUAD_STRIDE);
 

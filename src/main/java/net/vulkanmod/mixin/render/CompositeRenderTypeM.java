@@ -44,7 +44,8 @@ public abstract class CompositeRenderTypeM {
                                                     .writeTransform(
                                                             RenderSystem.getModelViewMatrix(),
                                                             new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-                                                            new Vector3f()
+                                                            new Vector3f(),
+                                                            RenderSystem.getProjectionMatrix()
                                                     );
         MeshData var3 = meshData;
 
