@@ -3,6 +3,7 @@ package net.vulkanmod.render.chunk.build.frapi;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableMesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.renderer.v1.render.ItemRenderTypeGetter;
 import net.fabricmc.fabric.api.renderer.v1.render.BlockVertexConsumerProvider;
 import net.fabricmc.fabric.api.renderer.v1.render.FabricBlockModelRenderer;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderLayerHelper;
@@ -73,4 +74,9 @@ public class VulkanModRenderer implements Renderer {
 	public QuadEmitter getLayerRenderStateEmitter(ItemStackRenderState.LayerRenderState layer) {
 		return ((AccessLayerRenderState) layer).getMutableMesh().emitter();
 	}
+
+@Override
+public void setLayerRenderTypeGetter(ItemStackRenderState.LayerRenderState layerRenderState, ItemRenderTypeGetter itemRenderTypeGetter) {
+}
+
 }

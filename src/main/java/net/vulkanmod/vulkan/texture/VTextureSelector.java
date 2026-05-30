@@ -82,29 +82,7 @@ public abstract class VTextureSelector {
     }
 
     public static void bindShaderTextures(Pipeline pipeline) {
-        var imageDescriptors = pipeline.getImageDescriptors();
-
-        for (ImageDescriptor state : imageDescriptors) {
-            var textureView = RenderSystem.getShaderTexture(state.imageIdx);
-
-            if (textureView == null)
-                continue;
-
-            VkGpuTexture gpuTexture = (VkGpuTexture) textureView.texture();
-            gpuTexture.flushModeChanges();
-
-            final int shaderTexture = gpuTexture.glId();
-            VkGlTexture texture = VkGlTexture.getTexture(shaderTexture);
-
-            if (texture != null && texture.getVulkanImage() != null) {
-                VTextureSelector.bindTexture(state.imageIdx, texture.getVulkanImage());
-            }
-            // TODO
-//            else {
-//                 texture = GlTexture.getTexture(MissingTextureAtlasSprite.getTexture().getId());
-//                 VTextureSelector.bindTexture(state.imageIdx, texture.getVulkanImage());
-//            }
-        }
+        // RenderSystem.getShaderTexture removed in 1.21.11; textures bound via render pass samplers
     }
 
     public static VulkanImage getImage(int i) {

@@ -9,6 +9,9 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer;
 
 public class TerrainBufferBuilder implements VertexConsumer {
+    @Override
+    public void setLineWidth(float f) {
+    }
     private static final Logger LOGGER = Initializer.LOGGER;
     private static final MemoryUtil.MemoryAllocator ALLOCATOR = MemoryUtil.getAllocator(false);
 

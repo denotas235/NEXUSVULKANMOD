@@ -159,7 +159,7 @@ public abstract class Options {
                                 InactivityFpsLimit.values(),
                                 value -> mcOptions.inactivityFpsLimit().set(value),
                                 () -> mcOptions.inactivityFpsLimit().get())
-                                .setTranslator(v -> Component.translatable(v.getKey()))
+                                .setTranslator(v -> Component.translatable(v.getSerializedName()))
                 }),
                 new OptionBlock("", new Option<?>[]{
                         new RangeOption(Component.translatable("options.guiScale"),
@@ -204,7 +204,7 @@ public abstract class Options {
                                 AttackIndicatorStatus.values(),
                                 value -> mcOptions.attackIndicator().set(value),
                                 () -> mcOptions.attackIndicator().get())
-                                .setTranslator(v -> Component.translatable(v.getKey())),
+                                .setTranslator(v -> Component.translatable(v.getSerializedName())),
                         new SwitchOption(Component.translatable("options.autosaveIndicator"),
                                 value -> mcOptions.showAutosaveIndicator().set(value),
                                 () -> mcOptions.showAutosaveIndicator().get())
@@ -229,25 +229,20 @@ public abstract class Options {
                                 PrioritizeChunkUpdates.values(),
                                 value -> mcOptions.prioritizeChunkUpdates().set(value),
                                 () -> mcOptions.prioritizeChunkUpdates().get())
-                                .setTranslator(v -> Component.translatable(v.getKey()))
+                                .setTranslator(v -> Component.translatable(v.getSerializedName()))
                 }),
                 new OptionBlock("", new Option<?>[]{
-                        new CyclingOption<>(Component.translatable("options.graphics"),
-                                new GraphicsStatus[]{GraphicsStatus.FAST, GraphicsStatus.FANCY},
-                                value -> mcOptions.graphicsMode().set(value),
-                                () -> mcOptions.graphicsMode().get())
-                                .setTranslator(g -> Component.translatable(g.getKey())),
                         new CyclingOption<>(Component.translatable("options.particles"),
                                 new ParticleStatus[]{ParticleStatus.MINIMAL, ParticleStatus.DECREASED, ParticleStatus.ALL},
                                 value -> mcOptions.particles().set(value),
                                 () -> mcOptions.particles().get())
                                 .setImpact(PerformanceImpact.MEDIUM)
-                                .setTranslator(p -> Component.translatable(p.getKey())),
+                                .setTranslator(p -> Component.translatable(p.getSerializedName())),
                         new CyclingOption<>(Component.translatable("options.renderClouds"),
                                 CloudStatus.values(),
                                 value -> mcOptions.cloudStatus().set(value),
                                 () -> mcOptions.cloudStatus().get())
-                                .setTranslator(c -> Component.translatable(c.getKey())),
+                                .setTranslator(c -> Component.translatable(c.getSerializedName())),
                         new RangeOption(Component.translatable("options.renderCloudsDistance"),
                                 2, 128, 1,
                                 value -> mcOptions.cloudRange().set(value),

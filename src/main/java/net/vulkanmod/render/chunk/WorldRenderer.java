@@ -191,8 +191,8 @@ public class WorldRenderer {
         mcProfiler.popPush("update");
 
         boolean cameraMoved = false;
-        float d_xRot = Math.abs(camera.getXRot() - this.lastCamRotX);
-        float d_yRot = Math.abs(camera.getYRot() - this.lastCamRotY);
+        float d_xRot = Math.abs(camera.xRot() - this.lastCamRotX);
+        float d_yRot = Math.abs(camera.yRot() - this.lastCamRotY);
         cameraMoved |= d_xRot > 2.0f || d_yRot > 2.0f;
 
         cameraMoved |= cameraX != this.lastCameraX || cameraY != this.lastCameraY || cameraZ != this.lastCameraZ;
@@ -207,8 +207,8 @@ public class WorldRenderer {
                 this.lastCameraX = cameraX;
                 this.lastCameraY = cameraY;
                 this.lastCameraZ = cameraZ;
-                this.lastCamRotX = camera.getXRot();
-                this.lastCamRotY = camera.getYRot();
+                this.lastCamRotX = camera.xRot();
+                this.lastCamRotY = camera.yRot();
 
                 this.sectionGraph.update(camera, frustum, spectator);
             }
@@ -348,10 +348,7 @@ public class WorldRenderer {
 
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
         AbstractTexture blockAtlasTexture = textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS);
-        blockAtlasTexture.setUseMipmaps(true);
 
-        RenderSystem.setShaderTexture(0, blockAtlasTexture.getTextureView());
-        RenderSystem.setShaderTexture(2, Minecraft.getInstance().gameRenderer.lightTexture().getTextureView());
 
         VTextureSelector.bindShaderTextures(pipeline);
 

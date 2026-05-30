@@ -1,9 +1,10 @@
 package net.vulkanmod.render.chunk.build.frapi.render;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadAtlas;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.model.ModelHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -51,6 +52,10 @@ public abstract class AbstractBlockRenderContext extends AbstractRenderContext {
 		@Override
 		public void emitDirectly() {
 			renderQuad(this);
+		}
+		@Override
+		public QuadEmitter atlas(QuadAtlas atlas) {
+			return this;
 		}
 
 //		@Override

@@ -39,7 +39,7 @@ public class Uniforms {
         vec1f_uniformMap.put("FogRenderDistanceEnd", () -> VRenderSystem.getFogData().renderDistanceEnd);
         vec1f_uniformMap.put("FogSkyEnd", () -> VRenderSystem.getFogData().skyEnd);
         vec1f_uniformMap.put("FogCloudsEnd", () -> VRenderSystem.getFogData().cloudEnd);
-        vec1f_uniformMap.put("LineWidth", RenderSystem::getShaderLineWidth);
+        vec1f_uniformMap.put("LineWidth", () -> 1.0f);
         vec1f_uniformMap.put("AlphaCutout", () -> VRenderSystem.alphaCutout);
 
         //Vec2

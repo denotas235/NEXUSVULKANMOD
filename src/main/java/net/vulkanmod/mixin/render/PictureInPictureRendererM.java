@@ -23,7 +23,7 @@ public class PictureInPictureRendererM<T extends PictureInPictureRenderState> {
         guiRenderState.submitBlitToCurrentLayer(
                 new BlitRenderState(
                         RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
-                        TextureSetup.singleTexture(this.textureView),
+                        TextureSetup.singleTexture(this.textureView, null),
                         pictureInPictureRenderState.pose(),
                         pictureInPictureRenderState.x0(),
                         pictureInPictureRenderState.y0(),

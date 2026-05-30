@@ -86,9 +86,6 @@ public class VBO {
             case LINES -> {
                 autoIndexBuffer = Renderer.getDrawer().getLinesIndexBuffer();
             }
-            case DEBUG_LINE_STRIP -> {
-                autoIndexBuffer = Renderer.getDrawer().getDebugLineStripIndexBuffer();
-            }
             case TRIANGLES, DEBUG_LINES -> {
                 autoIndexBuffer = null;
             }

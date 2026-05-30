@@ -6,6 +6,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
@@ -86,13 +87,23 @@ public class VkRenderPass implements RenderPass {
     }
 
     @Override
-    public void bindSampler(String string, @Nullable GpuTextureView gpuTextureView) {
+    public void bindSampler(String string, @Nullable GpuTextureView gpuTextureView, @Nullable GpuSampler gpuSampler) {
         if (gpuTextureView == null) {
             this.samplers.remove(string);
         } else {
             this.samplers.put(string, gpuTextureView);
         }
 
+        this.dirtyUniforms.add(string);
+    }
+
+    @Override
+    public void bindTexture(String string, @Nullable GpuTextureView gpuTextureView, @Nullable GpuSampler gpuSampler) {
+        if (gpuTextureView == null) {
+            this.samplers.remove(string);
+        } else {
+            this.samplers.put(string, gpuTextureView);
+        }
         this.dirtyUniforms.add(string);
     }
 

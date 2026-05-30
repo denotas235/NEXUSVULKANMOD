@@ -109,7 +109,7 @@ public abstract class VRenderSystem {
 
     public static void applyProjectionMatrix(GpuBufferSlice bufferSlice) {
         long ptr = ((VkGpuBuffer) bufferSlice.buffer()).getBuffer().getDataPtr();
-        ByteBuffer byteBuffer = MemoryUtil.memByteBuffer(ptr + bufferSlice.offset(), bufferSlice.length());
+        ByteBuffer byteBuffer = MemoryUtil.memByteBuffer(ptr + bufferSlice.offset(), (int)bufferSlice.length());
         Matrix4f matrix4f = new Matrix4f().set(byteBuffer);
 
         matrix4f.get(projectionMatrix.buffer.asFloatBuffer());

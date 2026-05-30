@@ -153,7 +153,6 @@ public abstract class BufferBuilderM
         }
     }
 
-    @Override
     public void putBulkData(PoseStack.Pose matrixEntry, BakedQuad quad, float[] brightness, float red, float green,
                             float blue, float alpha, int[] lights, int overlay, boolean useQuadColorData) {
         putQuadData(matrixEntry, quad, brightness, red, green, blue, alpha, lights, overlay, useQuadColorData);
@@ -162,7 +161,7 @@ public abstract class BufferBuilderM
     @SuppressWarnings("UnreachableCode")
     @Unique
     private void putQuadData(PoseStack.Pose matrixEntry, BakedQuad quad, float[] brightness, float red, float green, float blue, float alpha, int[] lights, int overlay, boolean useQuadColorData) {
-        int[] quadData = quad.vertices();
+        int[] quadData = quad.getVertices();
         Vec3i vec3i = quad.direction().getUnitVec3i();
         Matrix4f matrix4f = matrixEntry.pose();
 

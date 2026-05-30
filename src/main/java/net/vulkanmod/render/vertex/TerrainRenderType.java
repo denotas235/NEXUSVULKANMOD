@@ -47,13 +47,11 @@ public enum TerrainRenderType {
     }
 
     public static TerrainRenderType get(ChunkSectionLayer layer) {
-        return switch (layer) {
-            case SOLID -> SOLID;
-            case CUTOUT_MIPPED -> CUTOUT_MIPPED;
-            case CUTOUT -> CUTOUT;
-            case TRANSLUCENT -> TRANSLUCENT;
-            case TRIPWIRE -> TRIPWIRE;
-        };
+        if (layer == ChunkSectionLayer.SOLID) return SOLID;
+        if (layer == ChunkSectionLayer.CUTOUT) return CUTOUT_MIPPED;
+        if (layer == ChunkSectionLayer.TRANSLUCENT) return TRANSLUCENT;
+        if (layer == ChunkSectionLayer.TRIPWIRE) return TRIPWIRE;
+        return SOLID;
     }
 
     public static TerrainRenderType get(String name) {
@@ -68,13 +66,12 @@ public enum TerrainRenderType {
     }
 
     public static ChunkSectionLayer getLayer(TerrainRenderType renderType) {
-        return switch (renderType) {
-            case SOLID -> ChunkSectionLayer.SOLID;
-            case CUTOUT -> ChunkSectionLayer.CUTOUT;
-            case CUTOUT_MIPPED -> ChunkSectionLayer.CUTOUT_MIPPED;
-            case TRANSLUCENT -> ChunkSectionLayer.TRANSLUCENT;
-            case TRIPWIRE -> ChunkSectionLayer.TRIPWIRE;
-        };
+        if (renderType == SOLID) return ChunkSectionLayer.SOLID;
+        if (renderType == CUTOUT) return ChunkSectionLayer.CUTOUT;
+        if (renderType == CUTOUT_MIPPED) return ChunkSectionLayer.CUTOUT;
+        if (renderType == TRANSLUCENT) return ChunkSectionLayer.TRANSLUCENT;
+        if (renderType == TRIPWIRE) return ChunkSectionLayer.TRIPWIRE;
+        return ChunkSectionLayer.SOLID;
     }
 
     public static void updateMapping() {

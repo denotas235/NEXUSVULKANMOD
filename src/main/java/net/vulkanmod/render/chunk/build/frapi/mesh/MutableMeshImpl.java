@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableMesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 
 /**
@@ -32,6 +33,8 @@ import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
  */
 public class MutableMeshImpl extends MeshImpl implements MutableMesh {
     private final MutableQuadViewImpl emitter = new MutableQuadViewImpl() {
+        @Override
+        public QuadEmitter atlas(QuadAtlas atlas) { return this; }
         @Override
         protected void emitDirectly() {
             // Necessary because the validity of geometry is not encoded; reading mesh data always

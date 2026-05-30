@@ -26,6 +26,12 @@ public class VkGpuTexture extends GlTexture {
     protected boolean closed;
     protected boolean modesDirty = true;
 
+    private FilterMode ownMagFilter = FilterMode.NEAREST;
+    private FilterMode ownMinFilter = FilterMode.NEAREST;
+    private boolean ownUseMipmaps = false;
+    private AddressMode ownAddressModeU = AddressMode.CLAMP_TO_EDGE;
+    private AddressMode ownAddressModeV = AddressMode.CLAMP_TO_EDGE;
+
     boolean needsClear = false;
     int clearColor = 0;
     float depthClearValue = 1.0f;
@@ -55,13 +61,13 @@ public class VkGpuTexture extends GlTexture {
 
     public void flushModeChanges() {
         if (this.modesDirty) {
-            int maxLod = this.useMipmaps ? this.getMipLevels() - 1 : 0;
+            int maxLod = this.ownUseMipmaps ? this.getMipLevels() - 1 : 0;
 
-            int magFilterVk = magFilter == FilterMode.LINEAR ? VK10.VK_FILTER_LINEAR : VK10.VK_FILTER_NEAREST;
-            int minFilterVk = minFilter == FilterMode.LINEAR ? VK10.VK_FILTER_LINEAR : VK10.VK_FILTER_NEAREST;
+            int magFilterVk = ownMagFilter == FilterMode.LINEAR ? VK10.VK_FILTER_LINEAR : VK10.VK_FILTER_NEAREST;
+            int minFilterVk = ownMinFilter == FilterMode.LINEAR ? VK10.VK_FILTER_LINEAR : VK10.VK_FILTER_NEAREST;
 
-            int addressModeUVk = this.addressModeU == AddressMode.REPEAT ? VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT : VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            int addressModeVVk = this.addressModeV == AddressMode.REPEAT ? VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT : VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            int addressModeUVk = this.ownAddressModeU == AddressMode.REPEAT ? VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT : VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            int addressModeVVk = this.ownAddressModeV == AddressMode.REPEAT ? VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT : VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
             long sampler = SamplerManager.getSampler(addressModeUVk, addressModeVVk,
                                                      minFilterVk, magFilterVk, VK10.VK_SAMPLER_MIPMAP_MODE_LINEAR,
@@ -77,21 +83,20 @@ public class VkGpuTexture extends GlTexture {
         return this.id;
     }
 
-    @Override
     public void setAddressMode(AddressMode addressMode, AddressMode addressMode2) {
-        super.setAddressMode(addressMode, addressMode2);
+        this.ownAddressModeU = addressMode;
+        this.ownAddressModeV = addressMode2;
         this.modesDirty = true;
     }
 
-    @Override
     public void setTextureFilter(FilterMode filterMode, FilterMode filterMode2, boolean bl) {
-        super.setTextureFilter(filterMode, filterMode2, bl);
+        this.ownMagFilter = filterMode;
+        this.ownMinFilter = filterMode2;
         this.modesDirty = true;
     }
 
-    @Override
     public void setUseMipmaps(boolean bl) {
-        super.setUseMipmaps(bl);
+        this.ownUseMipmaps = bl;
         this.modesDirty = true;
     }
 

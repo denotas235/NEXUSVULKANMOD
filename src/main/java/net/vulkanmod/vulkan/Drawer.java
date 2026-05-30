@@ -207,8 +207,8 @@ public class Drawer {
             case LINES -> this.linesIndexBuffer;
             case TRIANGLE_FAN -> this.triangleFanIndexBuffer;
             case TRIANGLE_STRIP, LINE_STRIP -> this.triangleStripIndexBuffer;
-            case DEBUG_LINE_STRIP -> this.debugLineStripIndexBuffer;
             case TRIANGLES, DEBUG_LINES -> null;
+            default -> null;
 		};
     }
 }

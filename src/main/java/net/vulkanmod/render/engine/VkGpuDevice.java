@@ -218,6 +218,11 @@ public class VkGpuDevice implements GpuDevice {
     }
 
     @Override
+    public float getMaxSupportedAnisotropy() {
+        return 1.0f;
+    }
+
+    @Override
     public int getMaxTextureSize() {
         return this.maxSupportedTextureSize;
     }

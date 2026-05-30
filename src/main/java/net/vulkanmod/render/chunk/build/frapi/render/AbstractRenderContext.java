@@ -15,6 +15,8 @@
  */
 
 package net.vulkanmod.render.chunk.build.frapi.render;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadAtlas;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -37,6 +39,10 @@ public abstract class AbstractRenderContext {
 		@Override
 		protected void emitDirectly() {
 			bufferQuad(this);
+		}
+		@Override
+		public QuadEmitter atlas(QuadAtlas atlas) {
+			return this;
 		}
 	};
 

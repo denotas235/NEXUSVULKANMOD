@@ -221,7 +221,7 @@ public class FluidRenderer implements FluidRendering.DefaultRenderer {
 
             float uA = (u0 + u1 + u2 + u3) / 4.0F;
             float vA = (v0 + v1 + v2 + v3) / 4.0F;
-            float ai = sprites[0].uvShrinkRatio();
+            float ai = 0.02f;
             u0 = Mth.lerp(ai, u0, uA);
             u1 = Mth.lerp(ai, u1, uA);
             u2 = Mth.lerp(ai, u2, uA);

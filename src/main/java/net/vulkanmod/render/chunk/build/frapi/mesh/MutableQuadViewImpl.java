@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.vulkanmod.render.model.quad.ModelQuadView;
 import org.jetbrains.annotations.Nullable;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadTransform;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadView;
@@ -58,6 +59,10 @@ public abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEm
 			@Override
 			protected void emitDirectly() {
 				// This quad won't be emitted. It's only used to configure the default quad data.
+			}
+			@Override
+			public QuadEmitter atlas(QuadAtlas atlas) {
+				return this;
 			}
 		};
 
@@ -240,7 +245,7 @@ public abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEm
 
 	@Override
 	public final MutableQuadViewImpl fromVanilla(int[] quadData, int startIndex) {
-		System.arraycopy(quadData, startIndex, data, baseIndex + HEADER_STRIDE, VANILLA_QUAD_STRIDE);
+		System.arraycopy(quadData, startIndex, data, baseIndex + HEADER_STRIDE, QUAD_STRIDE);
 		isGeometryInvalid = true;
 
 		int normalFlags = 0;
@@ -265,7 +270,7 @@ public abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEm
 
 	@Override
 	public final MutableQuadViewImpl fromBakedQuad(BakedQuad quad) {
-		fromVanilla(quad.vertices(), 0);
+		fromVanilla(quad.getVertices(), 0);
 //		data[baseIndex + HEADER_BITS] = EncodingFormat.cullFace(0, cullFace);
 		nominalFace(quad.direction());
 		diffuseShade(quad.shade());

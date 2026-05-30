@@ -9,6 +9,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuQuery;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -285,7 +286,7 @@ public class VkCommandEncoder implements CommandEncoder {
                             "Cannot write more data than this buffer can hold (attempting to write " + size + " bytes at offset " + gpuBufferSlice.offset() + " to " + gpuBufferSlice.length() + " slice size)"
                     );
                 } else {
-                    int dstOffset = gpuBufferSlice.offset();
+                    int dstOffset = (int) gpuBufferSlice.offset();
 
                     var commandBuffer = Renderer.getInstance().getTransferCb();
 
@@ -368,7 +369,7 @@ public class VkCommandEncoder implements CommandEncoder {
                     i |= 34;
                 }
 
-                ByteBuffer byteBuffer = MemoryUtil.memByteBuffer(gpuBuffer.getBuffer().getDataPtr() + gpuBufferSlice.offset(), gpuBufferSlice.length());
+                ByteBuffer byteBuffer = MemoryUtil.memByteBuffer(gpuBuffer.getBuffer().getDataPtr() + gpuBufferSlice.offset(), (int)gpuBufferSlice.length());
                 return new VkGpuBuffer.MappedView(0, byteBuffer);
             }
         }
@@ -390,13 +391,13 @@ public class VkCommandEncoder implements CommandEncoder {
                 } else if ((vkGpuBuffer2.usage() & 8) == 0) {
                     throw new IllegalStateException("Target buffer needs USAGE_COPY_DST to be a destination for a copy");
                 } else if (gpuBufferSlice.length() != gpuBufferSlice2.length()) {
-                    int var6 = gpuBufferSlice.length();
+                    int var6 = (int) gpuBufferSlice.length();
                     throw new IllegalArgumentException("Cannot copy from slice of size " + var6 + " to slice of size " + gpuBufferSlice2.length() + ", they must be equal");
                 } else if (gpuBufferSlice.offset() + gpuBufferSlice.length() > vkGpuBuffer.size()) {
-                    int var5 = gpuBufferSlice.length();
+                    int var5 = (int) gpuBufferSlice.length();
                     throw new IllegalArgumentException("Cannot copy more data than the source buffer holds (attempting to copy " + var5 + " bytes at offset " + gpuBufferSlice.offset() + " from " + vkGpuBuffer.size() + " size buffer)");
                 } else if (gpuBufferSlice2.offset() + gpuBufferSlice2.length() > vkGpuBuffer2.size()) {
-                    int var10002 = gpuBufferSlice2.length();
+                    int var10002 = (int) gpuBufferSlice2.length();
                     throw new IllegalArgumentException("Cannot copy more data than the target buffer can hold (attempting to copy " + var10002 + " bytes at offset " + gpuBufferSlice2.offset() + " to " + vkGpuBuffer2.size() + " size buffer)");
                 } else {
 //                    this.device.directStateAccess().copyBufferSubData(vkGpuBuffer.handle, vkGpuBuffer2.handle, gpuBufferSlice.offset(), gpuBufferSlice2.offset(), gpuBufferSlice.length());
@@ -507,7 +508,6 @@ public class VkCommandEncoder implements CommandEncoder {
         }
     }
 
-    @Override
     public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, int i, Runnable runnable, int j) {
         if (this.inRenderPass) {
             throw new IllegalStateException("Close the existing render pass before performing additional commands");
@@ -516,7 +516,6 @@ public class VkCommandEncoder implements CommandEncoder {
         }
     }
 
-    @Override
     public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, int dstOffset, Runnable runnable, int mipLevel, int xOffset, int yOffset, int width, int height) {
         VkGpuBuffer vkGpuBuffer = (VkGpuBuffer) gpuBuffer;
         VkGpuTexture vkGpuTexture = (VkGpuTexture) gpuTexture;
@@ -824,7 +823,7 @@ public class VkCommandEncoder implements CommandEncoder {
 
             assert ubo != null;
             ubo.setUseGlobalBuffer(false);
-            ubo.getBufferSlice().set(gpuBuffer.buffer, gpuBufferSlice.offset(), gpuBufferSlice.length());
+            ubo.getBufferSlice().set(gpuBuffer.buffer, (int)gpuBufferSlice.offset(), (int)gpuBufferSlice.length());
         }
 
         for (ImageDescriptor imageDescriptor : pipeline.getImageDescriptors()) {
@@ -926,4 +925,9 @@ public class VkCommandEncoder implements CommandEncoder {
     protected VkGpuDevice getDevice() {
         return this.device;
     }
+
+    @Override
+    public void timerQueryEnd(GpuQuery gpuQuery) {
+    }
+
 }

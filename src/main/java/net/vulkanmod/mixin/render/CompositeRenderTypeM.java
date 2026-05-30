@@ -44,9 +44,7 @@ public abstract class CompositeRenderTypeM {
                                                     .writeTransform(
                                                             RenderSystem.getModelViewMatrix(),
                                                             new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-                                                            new Vector3f(),
-                                                            RenderSystem.getTextureMatrix(),
-                                                            RenderSystem.getShaderLineWidth()
+                                                            new Vector3f()
                                                     );
         MeshData var3 = meshData;
 
@@ -85,16 +83,6 @@ public abstract class CompositeRenderTypeM {
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
                 renderPass.setVertexBuffer(0, gpuBuffer);
-
-                for (int i = 0; i < 12; i++) {
-                    GpuTextureView gpuTextureView3 = RenderSystem.getShaderTexture(i);
-                    if (gpuTextureView3 != null) {
-                        renderPass.bindSampler("Sampler" + i, gpuTextureView3);
-
-                        VkGpuTexture vkGpuTexture = (VkGpuTexture) gpuTextureView3.texture();
-                        VTextureSelector.bindTexture(i, vkGpuTexture.getVulkanImage());
-                    }
-                }
 
                 VRenderSystem.applyModelViewMatrix(RenderSystem.getModelViewMatrix());
                 VRenderSystem.calculateMVP();

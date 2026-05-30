@@ -36,7 +36,7 @@ public abstract class GuiRendererMixin {
                 .submitBlitToCurrentLayer(
                         new BlitRenderState(
                                 RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
-                                TextureSetup.singleTexture(this.itemsAtlasView),
+                                TextureSetup.singleTexture(this.itemsAtlasView, null),
                                 guiItemRenderState.pose(),
                                 guiItemRenderState.x(),
                                 guiItemRenderState.y(),
