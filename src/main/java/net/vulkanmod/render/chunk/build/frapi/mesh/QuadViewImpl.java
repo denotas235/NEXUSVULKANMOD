@@ -62,7 +62,7 @@ public class QuadViewImpl implements QuadView, ModelQuadView {
 
     @Override
     public QuadAtlas atlas() {
-        return QuadAtlas.BLOCKS;
+        return null;
     }
 	protected final Vector3f faceNormal = new Vector3f();
 

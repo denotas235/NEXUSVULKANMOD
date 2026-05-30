@@ -927,7 +927,8 @@ public class VkCommandEncoder implements CommandEncoder {
     }
 
     @Override
-    public void timerQueryBegin() {
+    public GpuQuery timerQueryBegin() {
+        return null;
     }
 
     @Override

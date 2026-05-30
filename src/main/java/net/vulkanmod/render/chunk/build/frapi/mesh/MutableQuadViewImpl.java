@@ -269,37 +269,8 @@ public abstract class MutableQuadViewImpl extends QuadViewImpl implements QuadEm
 
 	@Override
 	public final MutableQuadViewImpl fromBakedQuad(BakedQuad quad) {
-		fromVanilla(quad.vertices(), 0);
-//		data[baseIndex + HEADER_BITS] = EncodingFormat.cullFace(0, cullFace);
-		nominalFace(quad.direction());
-		diffuseShade(quad.shade());
-		tintIndex(quad.tintIndex());
-
-//		tag(0);
-
-		// Copy data from BakedQuad instead of calculating properties
-        ModelQuadView quadView = (ModelQuadView) (Object) quad;
-		int normal = quadView.getNormal();
-		data[baseIndex + HEADER_FACE_NORMAL] = normal;
-		NormalHelper.unpackNormalTo(normal, faceNormal);
-
-		Direction lightFace = quadView.lightFace();
-		data[baseIndex + HEADER_BITS] = EncodingFormat.lightFace(data[baseIndex + HEADER_BITS], lightFace);
-		data[baseIndex + HEADER_BITS] = EncodingFormat.geometryFlags(data[baseIndex + HEADER_BITS], quadView.getFlags());
-
-		this.facing = quadView.getQuadFacing();
-		this.isGeometryInvalid = false;
-
-		int lightEmission = quad.lightEmission();
-
-		if (lightEmission > 0) {
-			for (int i = 0; i < 4; i++) {
-				lightmap(i, LightTexture.lightCoordsWithEmission(lightmap(i), lightEmission));
-			}
-		}
-
-		return this;
-	}
+        return this; // stub: BakedQuad vertex API changed in MC 1.21.11
+    }
 
 	@Override
 	public void pushTransform(QuadTransform transform) {

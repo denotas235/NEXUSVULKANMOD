@@ -293,6 +293,10 @@ public class VkGpuDevice implements GpuDevice {
     }
 
     @Override
+    public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable com.mojang.blaze3d.shaders.ShaderSource shaderSource) {
+        return this.precompilePipeline(renderPipeline, (BiFunction<Identifier, ShaderType, String>) (shaderSource == null ? null : (id, type) -> shaderSource.apply(id, type)));
+    }
+
     public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
         shaderSourceGetter = shaderSourceGetter == null ? this.defaultShaderSource : shaderSourceGetter;
 

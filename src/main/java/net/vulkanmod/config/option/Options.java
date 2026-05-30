@@ -204,7 +204,7 @@ public abstract class Options {
                                 AttackIndicatorStatus.values(),
                                 value -> mcOptions.attackIndicator().set(value),
                                 () -> mcOptions.attackIndicator().get())
-                                .setTranslator(v -> v.getKey()),
+                                .setTranslator(v -> Component.literal(v.name())),
                         new SwitchOption(Component.translatable("options.autosaveIndicator"),
                                 value -> mcOptions.showAutosaveIndicator().set(value),
                                 () -> mcOptions.showAutosaveIndicator().get())
@@ -229,7 +229,7 @@ public abstract class Options {
                                 PrioritizeChunkUpdates.values(),
                                 value -> mcOptions.prioritizeChunkUpdates().set(value),
                                 () -> mcOptions.prioritizeChunkUpdates().get())
-                                .setTranslator(v -> v.getKey())
+                                .setTranslator(v -> Component.literal(v.name()))
                 }),
                 new OptionBlock("", new Option<?>[]{
                         new CyclingOption<>(Component.translatable("options.particles"),
@@ -237,7 +237,7 @@ public abstract class Options {
                                 value -> mcOptions.particles().set(value),
                                 () -> mcOptions.particles().get())
                                 .setImpact(PerformanceImpact.MEDIUM)
-                                .setTranslator(p -> p.getKey()),
+                                .setTranslator(p -> Component.literal(p.name())),
                         new CyclingOption<>(Component.translatable("options.renderClouds"),
                                 CloudStatus.values(),
                                 value -> mcOptions.cloudStatus().set(value),
