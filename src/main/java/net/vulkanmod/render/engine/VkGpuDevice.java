@@ -425,4 +425,15 @@ public class VkGpuDevice implements GpuDevice {
             return true;
         }
     }
+
+    @Override
+    public com.mojang.blaze3d.textures.GpuSampler createSampler(
+            com.mojang.blaze3d.textures.AddressMode addressModeU,
+            com.mojang.blaze3d.textures.AddressMode addressModeV,
+            com.mojang.blaze3d.textures.FilterMode minFilter,
+            com.mojang.blaze3d.textures.FilterMode magFilter,
+            int mipLodBias,
+            java.util.OptionalDouble mipmap) {
+        return null; // stub: GPU sampler not implemented
+    }
 }
