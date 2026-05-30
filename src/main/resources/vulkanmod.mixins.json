@@ -4,6 +4,7 @@
   "package": "net.vulkanmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "plugin": "net.vulkanmod.mixin.MixinPlugin",
+  "refmap": "vulkanmod.refmap.json",
   "mixins": [
   ],
   "client": [
@@ -100,8 +101,6 @@
     "wayland.InputConstantsM",
     "wayland.KeyboardHandlerM",
     "wayland.MinecraftMixin",
-
-    "texture.mip.MipmapGeneratorM",
 
     "compatibility.PostPassM",
 
