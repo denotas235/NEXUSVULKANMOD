@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class CloudRenderer {
-    private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/clouds.png");
+    private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/environment/clouds.png");
 
     private static final int DIR_NEG_Y_BIT = 1 << 0;
     private static final int DIR_POS_Y_BIT = 1 << 1;
@@ -292,7 +292,7 @@ public class CloudRenderer {
         bufferBuilder.addVertex(x, y, z).setColor(color);
     }
 
-    private static CloudGrid createCloudGrid(ResourceLocation textureLocation) {
+    private static CloudGrid createCloudGrid(Identifier textureLocation) {
         ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
 
         try {

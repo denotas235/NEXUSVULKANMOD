@@ -15,7 +15,7 @@ import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.ShaderDefines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.vulkanmod.gl.VkGlTexture;
 import net.vulkanmod.interfaces.shader.ExtendedRenderPipeline;
 import net.vulkanmod.render.shader.ShaderLoadUtil;
@@ -48,14 +48,14 @@ public class VkGpuDevice implements GpuDevice {
     private final VkDebugLabel debugLabels;
     private final int maxSupportedTextureSize;
     private final int uniformOffsetAlignment;
-    private final BiFunction<ResourceLocation, ShaderType, String> defaultShaderSource;
+    private final BiFunction<Identifier, ShaderType, String> defaultShaderSource;
     private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap<>();
     private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap<>();
     private final Set<String> enabledExtensions = new HashSet<>();
 
     private final Map<ShaderCompilationKey, String> shaderSrcCache = new HashMap<>();
 
-    public VkGpuDevice(long l, int i, boolean bl, BiFunction<ResourceLocation, ShaderType, String> shaderSource, boolean bl2) {
+    public VkGpuDevice(long l, int i, boolean bl, BiFunction<Identifier, ShaderType, String> shaderSource, boolean bl2) {
         this.debugLabels = VkDebugLabel.create(bl2, this.enabledExtensions);
         this.maxSupportedTextureSize = VRenderSystem.maxSupportedTextureSize();
         this.uniformOffsetAlignment = (int) DeviceManager.deviceProperties.limits().minUniformBufferOffsetAlignment();
@@ -257,13 +257,13 @@ public class VkGpuDevice implements GpuDevice {
     }
 
     protected GlShaderModule getOrCompileShader(
-            ResourceLocation resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines, BiFunction<ResourceLocation, ShaderType, String> biFunction
+            Identifier resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines, BiFunction<Identifier, ShaderType, String> biFunction
     ) {
         ShaderCompilationKey shaderCompilationKey = new ShaderCompilationKey(resourceLocation, shaderType, shaderDefines);
         return this.shaderCache.computeIfAbsent(shaderCompilationKey, shaderCompilationKey2 -> this.compileShader(shaderCompilationKey, biFunction));
     }
 
-    protected String getCachedShaderSrc(ResourceLocation resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines, BiFunction<ResourceLocation, ShaderType, String> shaderSourceGetter) {
+    protected String getCachedShaderSrc(Identifier resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines, BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
         ShaderCompilationKey shaderCompilationKey = new ShaderCompilationKey(resourceLocation, shaderType, shaderDefines);
 
         return this.shaderSrcCache.computeIfAbsent(shaderCompilationKey, compilationKey -> {
@@ -288,7 +288,7 @@ public class VkGpuDevice implements GpuDevice {
         });
     }
 
-    public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable BiFunction<ResourceLocation, ShaderType, String> shaderSourceGetter) {
+    public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
         shaderSourceGetter = shaderSourceGetter == null ? this.defaultShaderSource : shaderSourceGetter;
 
         try {
@@ -305,7 +305,7 @@ public class VkGpuDevice implements GpuDevice {
         this.compilePipeline(renderPipeline, this.defaultShaderSource);
     }
 
-    private GlShaderModule compileShader(ShaderCompilationKey shaderCompilationKey, BiFunction<ResourceLocation, ShaderType, String> biFunction) {
+    private GlShaderModule compileShader(ShaderCompilationKey shaderCompilationKey, BiFunction<Identifier, ShaderType, String> biFunction) {
         String string = biFunction.apply(shaderCompilationKey.id, shaderCompilationKey.type);
         if (string == null) {
             LOGGER.error("Couldn't find source for {} shader ({})", shaderCompilationKey.type, shaderCompilationKey.id);
@@ -327,7 +327,7 @@ public class VkGpuDevice implements GpuDevice {
         }
     }
 
-    private void compilePipeline(RenderPipeline renderPipeline, BiFunction<ResourceLocation, ShaderType, String> shaderSrcGetter) {
+    private void compilePipeline(RenderPipeline renderPipeline, BiFunction<Identifier, ShaderType, String> shaderSrcGetter) {
         String locationPath = renderPipeline.getLocation().getPath();
 
         String configName;
@@ -341,8 +341,8 @@ public class VkGpuDevice implements GpuDevice {
         GraphicsPipeline pipeline;
         ExtendedRenderPipeline extPipeline = ExtendedRenderPipeline.of(renderPipeline);
 
-        ResourceLocation vertexShaderLocation = renderPipeline.getVertexShader();
-        ResourceLocation fragmentShaderLocation = renderPipeline.getFragmentShader();
+        Identifier vertexShaderLocation = renderPipeline.getVertexShader();
+        Identifier fragmentShaderLocation = renderPipeline.getFragmentShader();
 
         ShaderDefines shaderDefines = renderPipeline.getShaderDefines();
 
@@ -391,7 +391,7 @@ public class VkGpuDevice implements GpuDevice {
     }
 
     @Environment(EnvType.CLIENT)
-    record ShaderCompilationKey(ResourceLocation id, ShaderType type, ShaderDefines defines) {
+    record ShaderCompilationKey(Identifier id, ShaderType type, ShaderDefines defines) {
 
         public String toString() {
             String string = this.id + " (" + this.type + ")";

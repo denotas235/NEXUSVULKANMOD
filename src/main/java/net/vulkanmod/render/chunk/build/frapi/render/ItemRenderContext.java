@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.vulkanmod.mixin.render.frapi.ItemRendererAccessor;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.util.RandomSource;

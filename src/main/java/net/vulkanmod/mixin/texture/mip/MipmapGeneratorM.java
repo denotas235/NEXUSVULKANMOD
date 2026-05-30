@@ -1,7 +1,7 @@
 package net.vulkanmod.mixin.texture.mip;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
 import net.vulkanmod.mixin.texture.image.NativeImageAccessor;
 import org.lwjgl.opengl.GL30;

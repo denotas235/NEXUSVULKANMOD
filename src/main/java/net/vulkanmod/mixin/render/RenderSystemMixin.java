@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.DynamicUniforms;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.vulkanmod.render.engine.VkGpuDevice;
 import net.vulkanmod.vulkan.Renderer;
 import net.vulkanmod.vulkan.VRenderSystem;
@@ -33,7 +33,7 @@ public abstract class RenderSystemMixin {
     public static void assertOnRenderThread() {}
 
     @Overwrite(remap = false)
-    public static void initRenderer(long l, int i, boolean bl, BiFunction<ResourceLocation, ShaderType, String> shaderSource, boolean bl2) {
+    public static void initRenderer(long l, int i, boolean bl, BiFunction<Identifier, ShaderType, String> shaderSource, boolean bl2) {
         renderThread.setPriority(Thread.NORM_PRIORITY + 2);
 
         VRenderSystem.initRenderer();

@@ -1,23 +1,13 @@
 package net.vulkanmod.mixin.render;
 
-import com.google.common.collect.ImmutableList;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(RenderType.CompositeState.class)
+@Mixin(RenderSetup.class)
 public interface CompositeStateAccessor {
 
-    @Accessor("textureState")
-    RenderStateShard.EmptyTextureStateShard getTextureState();
-
-    @Accessor("outputState")
-    RenderStateShard.OutputStateShard getOutputState();
-
-    @Accessor("outlineProperty")
-    RenderType.OutlineProperty getOutlineProperty();
-
-    @Accessor("states")
-    ImmutableList<RenderStateShard> getStates();
+    @Accessor("outputTarget")
+    OutputTarget getOutputTarget();
 }

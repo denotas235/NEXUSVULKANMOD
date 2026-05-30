@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.shaders.ShaderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.vulkanmod.vulkan.shader.Pipeline;
 import net.vulkanmod.vulkan.shader.SPIRVUtils;
 import org.apache.commons.io.IOUtils;
@@ -75,7 +75,7 @@ public abstract class ShaderLoadUtil {
 
     public static JsonObject getJsonConfig(String path, String rendertype) {
         // Check for external shader
-        if (rendertype.contains(String.valueOf(ResourceLocation.NAMESPACE_SEPARATOR))) {
+        if (rendertype.contains(String.valueOf(Identifier.NAMESPACE_SEPARATOR))) {
             return null;
         }
 
@@ -105,7 +105,7 @@ public abstract class ShaderLoadUtil {
 
     }
 
-    public static String getShaderSource(ResourceLocation resourceLocation, ShaderType type) {
+    public static String getShaderSource(Identifier resourceLocation, ShaderType type) {
         String shaderExtension = switch (type) {
             case VERTEX -> ".vsh";
             case FRAGMENT -> ".fsh";

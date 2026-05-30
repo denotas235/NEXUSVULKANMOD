@@ -10,7 +10,8 @@ import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.vulkanmod.render.engine.*;
 import net.vulkanmod.vulkan.Renderer;
 import net.vulkanmod.vulkan.VRenderSystem;
@@ -25,11 +26,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-@Mixin(RenderType.CompositeRenderType.class)
+@Mixin(RenderType.class)
 public abstract class CompositeRenderTypeM {
 
-    @Shadow @Final private RenderType.CompositeState state;
-    @Shadow @Final private RenderPipeline renderPipeline;
+    @Shadow @Final private RenderSetup state;
+
+    @Shadow public abstract RenderPipeline pipeline();
 
     // TODO
     /**
@@ -38,7 +40,6 @@ public abstract class CompositeRenderTypeM {
      */
     @Overwrite
     public void draw(MeshData meshData) {
-        ((RenderType.CompositeRenderType)(Object)(this)).setupRenderState();
         GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
                                                     .writeTransform(
                                                             RenderSystem.getModelViewMatrix(),
@@ -50,7 +51,7 @@ public abstract class CompositeRenderTypeM {
         MeshData var3 = meshData;
 
         try {
-            GpuBuffer gpuBuffer = this.renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
+            GpuBuffer gpuBuffer = this.pipeline().getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
             GpuBuffer gpuBuffer2;
             VertexFormat.IndexType indexType;
             if (meshData.indexBuffer() == null) {
@@ -58,11 +59,11 @@ public abstract class CompositeRenderTypeM {
                 gpuBuffer2 = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                gpuBuffer2 = this.renderPipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
+                gpuBuffer2 = this.pipeline().getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
             }
 
-            RenderTarget renderTarget = ((CompositeStateAccessor)(Object)this.state).getOutputState().getRenderTarget();
+            RenderTarget renderTarget = ((CompositeStateAccessor)(Object)this.state).getOutputTarget().getRenderTarget();
             GpuTextureView gpuTextureView = RenderSystem.outputColorTextureOverride != null
                     ? RenderSystem.outputColorTextureOverride
                     : renderTarget.getColorTextureView();
@@ -73,9 +74,9 @@ public abstract class CompositeRenderTypeM {
             try (RenderPass renderPass = RenderSystem.getDevice()
                                                      .createCommandEncoder()
                                                      .createRenderPass(() -> "Immediate draw for " +
-                                                                             ((RenderType.CompositeRenderType) (Object) (this)).getName(),
+                                                                             ((RenderType) (Object) (this)).toString(),
                                                                        gpuTextureView, OptionalInt.empty(), gpuTextureView2, OptionalDouble.empty())) {
-                renderPass.setPipeline(this.renderPipeline);
+                renderPass.setPipeline(this.pipeline());
                 ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
                 if (scissorState.enabled()) {
                     renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
@@ -120,8 +121,6 @@ public abstract class CompositeRenderTypeM {
         if (meshData != null) {
             meshData.close();
         }
-
-        ((RenderType.CompositeRenderType)(Object)(this)).clearRenderState();
     }
 
 }

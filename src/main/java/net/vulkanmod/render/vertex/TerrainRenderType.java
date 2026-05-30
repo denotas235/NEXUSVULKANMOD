@@ -1,6 +1,6 @@
 package net.vulkanmod.render.vertex;
 
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.vulkanmod.Initializer;
 import net.vulkanmod.interfaces.ExtendedRenderType;
