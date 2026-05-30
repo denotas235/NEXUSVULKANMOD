@@ -6,7 +6,6 @@ accessible class net/minecraft/client/gui/Gui$HeartType
 
 accessible class net/minecraft/client/renderer/OutlineBufferSource$EntityOutlineGenerator
 
-accessible class net/minecraft/client/renderer/texture/SpriteContents$Ticker
 accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
 accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
 accessible field net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture frames Ljava/util/List;
