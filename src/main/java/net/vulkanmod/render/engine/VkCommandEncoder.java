@@ -516,6 +516,11 @@ public class VkCommandEncoder implements CommandEncoder {
         }
     }
 
+    @Override
+    public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, long dstOffset, Runnable runnable, int mipLevel, int xOffset, int yOffset, int width, int height) {
+        this.copyTextureToBuffer(gpuTexture, gpuBuffer, (int) dstOffset, runnable, mipLevel, xOffset, yOffset, width, height);
+    }
+
     public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, int dstOffset, Runnable runnable, int mipLevel, int xOffset, int yOffset, int width, int height) {
         VkGpuBuffer vkGpuBuffer = (VkGpuBuffer) gpuBuffer;
         VkGpuTexture vkGpuTexture = (VkGpuTexture) gpuTexture;

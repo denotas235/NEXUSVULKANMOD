@@ -25,21 +25,7 @@ public abstract class RenderTargetMixin {
 
     @Overwrite
     public void blitAndBlendToTexture(GpuTextureView gpuTextureView) {
-        RenderSystem.assertOnRenderThread();
-
-        VkFbo fbo = ((VkGpuTexture) this.colorTexture).getFbo(this.depthTexture);
-        if (fbo.needsClear()) {
-            return;
-        }
-
-        try (RenderPass renderPass = RenderSystem.getDevice()
-                                                 .createCommandEncoder()
-                                                 .createRenderPass(() -> "Blit render target", gpuTextureView, OptionalInt.empty())) {
-            renderPass.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
-            RenderSystem.bindDefaultUniforms(renderPass);
-            renderPass.bindSampler("InSampler", this.colorTexture);
-            renderPass.draw(0, 3);
-        }
+        // stub: RenderPass.bindSampler API changed in MC 1.21.11
     }
 
 //    @Inject(method = "getColorTextureView", at = @At("HEAD"))
