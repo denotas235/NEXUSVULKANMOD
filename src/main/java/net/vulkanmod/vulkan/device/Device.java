@@ -156,4 +156,8 @@ public class Device {
     public boolean isIntel() {
         return vendorId == 0x8086;
     }
+
+    public boolean isMali() {
+        return vendorId == 0x13B5;
+    }
 }
