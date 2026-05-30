@@ -31,16 +31,17 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.util.vma.Vma.vmaCreateAllocator;
 import static org.lwjgl.util.vma.Vma.vmaDestroyAllocator;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;
-import static org.lwjgl.vulkan.KHRDynamicRendering.VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK12.VK_API_VERSION_1_2;
+import static org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1;
 
 public class Vulkan {
 
     public static final boolean ENABLE_VALIDATION_LAYERS = false;
 //    public static final boolean ENABLE_VALIDATION_LAYERS = true;
 
+    // Dynamic rendering requires VK_KHR_dynamic_rendering (extension) or Vulkan 1.3 core.
+    // Disabled — kept as dead code for future use.
     public static final boolean DYNAMIC_RENDERING = false;
 
     public static final Set<String> VALIDATION_LAYERS;
@@ -49,7 +50,6 @@ public class Vulkan {
         if (ENABLE_VALIDATION_LAYERS) {
             VALIDATION_LAYERS = new HashSet<>();
             VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_validation");
-//            VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_synchronization2");
 
         } else {
             // We are not going to use it, so we don't create it
@@ -61,11 +61,6 @@ public class Vulkan {
 
     private static Set<String> getRequiredExtensionSet() {
         ArrayList<String> extensions = new ArrayList<>(List.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
-
-        if (DYNAMIC_RENDERING) {
-            extensions.add(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        }
-
         return new HashSet<>(extensions);
     }
 
@@ -76,9 +71,6 @@ public class Vulkan {
         String s;
         if ((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             s = "\u001B[31m" + callbackData.pMessageString();
-
-//            System.err.println("Stack dump:");
-//            Thread.dumpStack();
         } else {
             s = callbackData.pMessageString();
         }
@@ -216,7 +208,7 @@ public class Vulkan {
             appInfo.applicationVersion(VK_MAKE_VERSION(1, 0, 0));
             appInfo.pEngineName(stack.UTF8Safe("VulkanMod Engine"));
             appInfo.engineVersion(VK_MAKE_VERSION(1, 0, 0));
-            appInfo.apiVersion(VK_API_VERSION_1_2);
+            appInfo.apiVersion(VK_API_VERSION_1_1);
 
             VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.calloc(stack);
 
@@ -265,10 +257,8 @@ public class Vulkan {
 
     private static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo) {
         debugCreateInfo.sType(VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT);
-//        debugCreateInfo.messageSeverity(VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT);
         debugCreateInfo.messageSeverity(VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT);
         debugCreateInfo.messageType(VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT);
-//        debugCreateInfo.messageType(VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT);
         debugCreateInfo.pfnUserCallback(Vulkan::debugCallback);
     }
 
@@ -329,7 +319,7 @@ public class Vulkan {
             allocatorCreateInfo.device(DeviceManager.vkDevice);
             allocatorCreateInfo.pVulkanFunctions(vulkanFunctions);
             allocatorCreateInfo.instance(instance);
-            allocatorCreateInfo.vulkanApiVersion(VK_API_VERSION_1_2);
+            allocatorCreateInfo.vulkanApiVersion(VK_API_VERSION_1_1);
 
             PointerBuffer pAllocator = stack.pointers(VK_NULL_HANDLE);
 
@@ -414,4 +404,3 @@ public class Vulkan {
         return DeviceManager.device;
     }
 }
-

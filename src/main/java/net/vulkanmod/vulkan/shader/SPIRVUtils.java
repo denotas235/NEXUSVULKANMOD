@@ -6,7 +6,7 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.util.shaderc.ShadercIncludeResolveI;
 import org.lwjgl.util.shaderc.ShadercIncludeResult;
 import org.lwjgl.util.shaderc.ShadercIncludeResultReleaseI;
-import org.lwjgl.vulkan.VK12;
+import org.lwjgl.vulkan.VK11;
 
 import java.io.IOException;
 import java.net.URI;
@@ -58,7 +58,8 @@ public class SPIRVUtils {
         if (DEBUG)
             shaderc_compile_options_set_generate_debug_info(options);
 
-        shaderc_compile_options_set_target_env(options, shaderc_env_version_vulkan_1_2, VK12.VK_API_VERSION_1_2);
+        // Target Vulkan 1.1 → generates SPIR-V 1.3, compatible with all Vulkan 1.1 devices
+        shaderc_compile_options_set_target_env(options, shaderc_env_version_vulkan_1_1, VK11.VK_API_VERSION_1_1);
         shaderc_compile_options_set_include_callbacks(options, SHADER_INCLUDER, SHADER_RELEASER, pUserData);
 
         includePaths = new ObjectArrayList<>();
@@ -80,7 +81,7 @@ public class SPIRVUtils {
         long result = shaderc_compile_into_spv(compiler, source, shaderKind.kind, filename, "main", options);
 
         if (result == NULL) {
-            throw new RuntimeException("Failed to compile shader %s into SPRI-V".formatted(filename ));
+            throw new RuntimeException("Failed to compile shader %s into SPRI-V".formatted(filename));
         }
 
         if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success) {
