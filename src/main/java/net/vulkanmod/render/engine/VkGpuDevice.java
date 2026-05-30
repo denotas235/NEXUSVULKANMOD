@@ -146,6 +146,11 @@ public class VkGpuDevice implements GpuDevice {
         }
     }
 
+    @Override
+    public GpuBuffer createBuffer(@Nullable Supplier<String> supplier, int usage, long size) {
+        return this.createBuffer(supplier, usage, (int) size);
+    }
+
     public GpuBuffer createBuffer(@Nullable Supplier<String> supplier, int usage, int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("Buffer size must be greater than zero");
@@ -294,8 +299,7 @@ public class VkGpuDevice implements GpuDevice {
 
     @Override
     public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable com.mojang.blaze3d.shaders.ShaderSource shaderSource) {
-        BiFunction<Identifier, ShaderType, String> src = shaderSource == null ? null : (id, type) -> shaderSource.apply(id, type);
-        return this.precompilePipeline(renderPipeline, src);
+        return this.precompilePipeline(renderPipeline, this.defaultShaderSource);
     }
 
     public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {

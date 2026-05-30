@@ -508,17 +508,17 @@ public class VkCommandEncoder implements CommandEncoder {
         }
     }
 
+    @Override
+    public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, long i, Runnable runnable, int j) {
+        this.copyTextureToBuffer(gpuTexture, gpuBuffer, (int) i, runnable, j);
+    }
+
     public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, int i, Runnable runnable, int j) {
         if (this.inRenderPass) {
             throw new IllegalStateException("Close the existing render pass before performing additional commands");
         } else {
             this.copyTextureToBuffer(gpuTexture, gpuBuffer, i, runnable, j, 0, 0, gpuTexture.getWidth(j), gpuTexture.getHeight(j));
         }
-    }
-
-    @Override
-    public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, long dstOffset, Runnable runnable, int mipLevel, int xOffset, int yOffset, int width, int height) {
-        this.copyTextureToBuffer(gpuTexture, gpuBuffer, (int) dstOffset, runnable, mipLevel, xOffset, yOffset, width, height);
     }
 
     public void copyTextureToBuffer(GpuTexture gpuTexture, GpuBuffer gpuBuffer, int dstOffset, Runnable runnable, int mipLevel, int xOffset, int yOffset, int width, int height) {
