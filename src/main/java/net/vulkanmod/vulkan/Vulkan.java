@@ -126,7 +126,26 @@ public class Vulkan {
     public static boolean use24BitsDepthFormat = true;
     private static int DEFAULT_DEPTH_FORMAT = 0;
 
+    /**
+     * Initializes the Vulkan renderer.
+     * 
+     * Steps:
+     * 1. Validate Vulkan 1.1+ support (mobile GPU compatibility)
+     * 2. Create Vulkan instance with VK_API_VERSION_1_1
+     * 3. Setup debug messenger if validation enabled
+     * 4. Create surface and logical device
+     * 5. Initialize memory allocation and command pools
+     * 
+     * @param window GLFW window handle
+     * @throws RuntimeException if Vulkan 1.1 not supported
+     */
     public static void initVulkan(long window) {
+        // CRITICAL: Validate Vulkan version before any Vulkan calls
+        VersionValidator.validateVulkanVersion();
+        
+        // Verify no 1.2+ features will be used
+        FeatureGuards.verifyNoVulkan12Features();
+        
         createInstance();
         setupDebugMessenger();
         createSurface(window);
