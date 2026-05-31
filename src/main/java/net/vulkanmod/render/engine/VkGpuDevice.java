@@ -5,6 +5,7 @@ import com.mojang.blaze3d.opengl.*;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
+import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -52,15 +53,13 @@ public class VkGpuDevice implements GpuDevice {
     private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap<>();
     private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap<>();
     private final Set<String> enabledExtensions = new HashSet<>();
-
     private final Map<ShaderCompilationKey, String> shaderSrcCache = new HashMap<>();
 
-    public VkGpuDevice(long l, int i, boolean bl, BiFunction<Identifier, ShaderType, String> shaderSource, boolean bl2) {
+    public VkGpuDevice(long l, int i, boolean bl, ShaderSource shaderSource, boolean bl2) {
         this.debugLabels = VkDebugLabel.create(bl2, this.enabledExtensions);
         this.maxSupportedTextureSize = VRenderSystem.maxSupportedTextureSize();
         this.uniformOffsetAlignment = (int) DeviceManager.deviceProperties.limits().minUniformBufferOffsetAlignment();
-        this.defaultShaderSource = shaderSource;
-
+        this.defaultShaderSource = (id, type) -> shaderSource.get(id, type);
         this.encoder = new VkCommandEncoder(this);
     }
 
@@ -132,12 +131,9 @@ public class VkGpuDevice implements GpuDevice {
         if (gpuTexture.isClosed()) {
             throw new IllegalArgumentException("Can't create texture view with closed texture");
         } else if (startLevel >= 0 && startLevel + levels <= gpuTexture.getMipLevels()) {
-
-            // Try to convert gpuTexture to VkGpuTexture in case it's not
             if (gpuTexture.getClass() != VkGpuTexture.class) {
                 gpuTexture = VkGpuTexture.fromGlTexture((GlTexture) gpuTexture);
             }
-
             return new VkTextureView((VkGpuTexture) gpuTexture, startLevel, levels);
         } else {
             throw new IllegalArgumentException(
@@ -243,7 +239,6 @@ public class VkGpuDevice implements GpuDevice {
                 glRenderPipeline.program().close();
             }
         }
-
         this.pipelineCache.clear();
 
         for (GlShaderModule glShaderModule : this.shaderCache.values()) {
@@ -251,7 +246,6 @@ public class VkGpuDevice implements GpuDevice {
                 glShaderModule.close();
             }
         }
-
         this.shaderCache.clear();
     }
 
@@ -266,13 +260,14 @@ public class VkGpuDevice implements GpuDevice {
     }
 
     protected GlShaderModule getOrCompileShader(
-            Identifier resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines, BiFunction<Identifier, ShaderType, String> biFunction
-    ) {
+            Identifier resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines,
+            BiFunction<Identifier, ShaderType, String> biFunction) {
         ShaderCompilationKey shaderCompilationKey = new ShaderCompilationKey(resourceLocation, shaderType, shaderDefines);
-        return this.shaderCache.computeIfAbsent(shaderCompilationKey, shaderCompilationKey2 -> this.compileShader(shaderCompilationKey, biFunction));
+        return this.shaderCache.computeIfAbsent(shaderCompilationKey, k -> this.compileShader(k, biFunction));
     }
 
-    protected String getCachedShaderSrc(Identifier resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines, BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
+    protected String getCachedShaderSrc(Identifier resourceLocation, ShaderType shaderType, ShaderDefines shaderDefines,
+            BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
         ShaderCompilationKey shaderCompilationKey = new ShaderCompilationKey(resourceLocation, shaderType, shaderDefines);
 
         return this.shaderSrcCache.computeIfAbsent(shaderCompilationKey, compilationKey -> {
@@ -285,11 +280,9 @@ public class VkGpuDevice implements GpuDevice {
 
             if (ShaderLoadUtil.REMAPPED_SHADERS.contains(shaderName)) {
                 String src = ShaderLoadUtil.getShaderSource(resourceLocation, shaderType);
-
                 if (src == null) {
                     throw new RuntimeException("shader: (%s) not found.".formatted(resourceLocation));
                 }
-
                 return src;
             }
 
@@ -298,11 +291,15 @@ public class VkGpuDevice implements GpuDevice {
     }
 
     @Override
-    public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable com.mojang.blaze3d.shaders.ShaderSource shaderSource) {
-        return this.precompilePipeline(renderPipeline, this.defaultShaderSource);
+    public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable ShaderSource shaderSource) {
+        BiFunction<Identifier, ShaderType, String> src = shaderSource != null
+                ? (id, type) -> shaderSource.get(id, type)
+                : this.defaultShaderSource;
+        return this.precompilePipeline(renderPipeline, src);
     }
 
-    public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline, @Nullable BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
+    public CompiledRenderPipeline precompilePipeline(RenderPipeline renderPipeline,
+            @Nullable BiFunction<Identifier, ShaderType, String> shaderSourceGetter) {
         shaderSourceGetter = shaderSourceGetter == null ? this.defaultShaderSource : shaderSourceGetter;
 
         try {
@@ -311,7 +308,6 @@ public class VkGpuDevice implements GpuDevice {
             throw new RuntimeException("Caught exception compiling pipeline: %s".formatted(renderPipeline.toString()), e);
         }
 
-
         return new VkRenderPipeline(renderPipeline);
     }
 
@@ -319,7 +315,8 @@ public class VkGpuDevice implements GpuDevice {
         this.compilePipeline(renderPipeline, this.defaultShaderSource);
     }
 
-    private GlShaderModule compileShader(ShaderCompilationKey shaderCompilationKey, BiFunction<Identifier, ShaderType, String> biFunction) {
+    private GlShaderModule compileShader(ShaderCompilationKey shaderCompilationKey,
+            BiFunction<Identifier, ShaderType, String> biFunction) {
         String string = biFunction.apply(shaderCompilationKey.id, shaderCompilationKey.type);
         if (string == null) {
             LOGGER.error("Couldn't find source for {} shader ({})", shaderCompilationKey.type, shaderCompilationKey.id);
@@ -341,7 +338,8 @@ public class VkGpuDevice implements GpuDevice {
         }
     }
 
-    private void compilePipeline(RenderPipeline renderPipeline, BiFunction<Identifier, ShaderType, String> shaderSrcGetter) {
+    private void compilePipeline(RenderPipeline renderPipeline,
+            BiFunction<Identifier, ShaderType, String> shaderSrcGetter) {
         String locationPath = renderPipeline.getLocation().getPath();
 
         String configName;
@@ -357,7 +355,6 @@ public class VkGpuDevice implements GpuDevice {
 
         Identifier vertexShaderLocation = renderPipeline.getVertexShader();
         Identifier fragmentShaderLocation = renderPipeline.getFragmentShader();
-
         ShaderDefines shaderDefines = renderPipeline.getShaderDefines();
 
         String vshSrc = this.getCachedShaderSrc(vertexShaderLocation, ShaderType.VERTEX, shaderDefines, shaderSrcGetter);
@@ -372,7 +369,6 @@ public class VkGpuDevice implements GpuDevice {
 
         try {
             parser.parse(lexer, GLSLParser.Stage.VERTEX);
-
             lexer = new Lexer(fshSrc);
             parser.parse(lexer, GLSLParser.Stage.FRAGMENT);
         } catch (Exception e) {
@@ -386,7 +382,6 @@ public class VkGpuDevice implements GpuDevice {
         String fshProcessed = parser.getOutput(GLSLParser.Stage.FRAGMENT);
 
         builder.setUniforms(List.of(ubos), samplers);
-
         builder.setShaderSrc(SPIRVUtils.ShaderKind.VERTEX_SHADER, vshProcessed);
         builder.setShaderSrc(SPIRVUtils.ShaderKind.FRAGMENT_SHADER, fshProcessed);
 
@@ -400,13 +395,11 @@ public class VkGpuDevice implements GpuDevice {
         EGlProgram eGlProgram = new EGlProgram(1, configName);
         eGlProgram.setupUniforms(pipeline, renderPipeline.getUniforms(), renderPipeline.getSamplers());
         extPipeline.setProgram(eGlProgram);
-
         extPipeline.setPipeline(pipeline);
     }
 
     @Environment(EnvType.CLIENT)
     record ShaderCompilationKey(Identifier id, ShaderType type, ShaderDefines defines) {
-
         public String toString() {
             String string = this.id + " (" + this.type + ")";
             return !this.defines.isEmpty() ? string + " with " + this.defines : string;
@@ -434,6 +427,6 @@ public class VkGpuDevice implements GpuDevice {
             com.mojang.blaze3d.textures.FilterMode magFilter,
             int mipLodBias,
             java.util.OptionalDouble mipmap) {
-        return null; // stub: GPU sampler not implemented
+        return null;
     }
 }
