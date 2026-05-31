@@ -25,24 +25,28 @@ jobs:
       - name: build
         run: ./gradlew build
 
-      - name: validate refmap in JAR
+      - name: verify JAR contents
         if: ${{ matrix.java == '21' }}
         run: |
           JAR=$(ls build/libs/VulkanMod_*.jar | grep -v sources | head -1)
-          echo "=== JAR: $JAR ==="
-          echo "--- All entries in JAR ---"
-          unzip -l "$JAR" | grep -E "refmap|mixins" || echo "(no refmap/mixin entries found)"
-          echo "--------------------------"
-          if ! unzip -l "$JAR" | grep -q "vulkanmod.refmap.json"; then
-            echo "❌ vulkanmod.refmap.json NOT found in $JAR"
+          echo "=== Output JAR: $JAR ==="
+          if [ ! -f "$JAR" ]; then
+            echo "❌ No output JAR found"
             exit 1
           fi
-          SIZE=$(unzip -p "$JAR" vulkanmod.refmap.json | wc -c)
-          if [ "$SIZE" -lt 10 ]; then
-            echo "❌ vulkanmod.refmap.json is empty (size=${SIZE} bytes)"
+          echo "✅ JAR exists: $(du -sh "$JAR" | cut -f1)"
+          echo ""
+          echo "--- JSON files in JAR ---"
+          unzip -l "$JAR" | grep "\.json"
+          echo ""
+          # Loom 1.13+ remaps @Shadow/@Inject annotation values directly in
+          # remapJar via tiny-remapper; no separate refmap file is generated.
+          # Verify the mixin config is present instead.
+          if ! unzip -l "$JAR" | grep -q "vulkanmod.mixins.json"; then
+            echo "❌ vulkanmod.mixins.json missing from JAR"
             exit 1
           fi
-          echo "✅ vulkanmod.refmap.json present and non-empty (${SIZE} bytes)"
+          echo "✅ vulkanmod.mixins.json present in JAR"
 
       - name: capture build artifacts
         if: ${{ matrix.java == '21' }}
