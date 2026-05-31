@@ -13,8 +13,7 @@ base {
 loom {
         accessWidenerPath = file("src/main/resources/vulkanmod.accesswidener")
         mixin {
-                defaultRefmapName = "vulkanmod.refmap.json"
-                add(sourceSets.main, "vulkanmod.refmap.json")
+                useLegacyMixinAp = true
         }
 }
 
