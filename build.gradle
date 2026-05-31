@@ -30,14 +30,10 @@ dependencies {
 	includeModule("fabric-api-base")
 	includeModule("fabric-renderer-api-v1")
 	includeModule("fabric-rendering-fluids-v1")
-}
 
-project.ext.lwjglVersion = "3.3.3"
-
-dependencies {
-	include(implementation("org.lwjgl:lwjgl-vulkan:$lwjglVersion"))
-	include(implementation("org.lwjgl:lwjgl-vma:$lwjglVersion"))
-	include(implementation("org.lwjgl:lwjgl-shaderc:$lwjglVersion"))
+	compileOnly("org.lwjgl:lwjgl-vulkan:3.3.3")
+	compileOnly("org.lwjgl:lwjgl-vma:3.3.3")
+	compileOnly("org.lwjgl:lwjgl-shaderc:3.3.3")
 }
 
 processResources {
