@@ -13,15 +13,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyboardHandler.class)
 public abstract class KeyboardHandlerM {
 
-    @Shadow protected abstract boolean handleChunkDebugKeys(KeyEvent keyEvent);
+    @Shadow(remap = false)
+    private boolean field_1679;
 
-    @Shadow private boolean handledDebugKey;
+    @Shadow(remap = false)
+    protected abstract boolean method_1468(KeyEvent keyEvent);
 
-    @Inject(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;set(Lcom/mojang/blaze3d/platform/InputConstants$Key;Z)V", ordinal = 1))
+    @Inject(
+        method = "method_1466",
+        remap = false,
+        at = @At("HEAD")
+    )
     private void chunkDebug(long l, int i, KeyEvent keyEvent, CallbackInfo ci) {
-        // GLFW key 296 -> F7
-        // U -> Capture frustum
-        this.handledDebugKey |= InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), 296)
-                && this.handleChunkDebugKeys(keyEvent);
+        if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), 296)) {
+            this.field_1679 |= this.method_1468(keyEvent);
+        }
     }
 }
