@@ -12,9 +12,8 @@ base {
 
 loom {
         accessWidenerPath = file("src/main/resources/vulkanmod.accesswidener")
-        mixin {
-                useLegacyMixinAp = true
-        }
+        // Loom 1.13+ remaps @Shadow/@Inject annotation values directly in remapJar
+        // via tiny-remapper — no Mixin AP / refmap configuration needed.
 }
 
 dependencies {
