@@ -29,10 +29,12 @@ jobs:
         if: ${{ matrix.java == '21' }}
         run: |
           JAR=$(ls build/libs/VulkanMod_*.jar | grep -v sources | head -1)
-          echo "Checking JAR: $JAR"
+          echo "=== JAR: $JAR ==="
+          echo "--- All entries in JAR ---"
+          unzip -l "$JAR" | grep -E "refmap|mixins" || echo "(no refmap/mixin entries found)"
+          echo "--------------------------"
           if ! unzip -l "$JAR" | grep -q "vulkanmod.refmap.json"; then
             echo "❌ vulkanmod.refmap.json NOT found in $JAR"
-            echo "Mixin @Shadow fields using Mojang names will fail at runtime."
             exit 1
           fi
           SIZE=$(unzip -p "$JAR" vulkanmod.refmap.json | wc -c)
