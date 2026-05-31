@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.13-SNAPSHOT'
+	id 'fabric-loom' version '1.9.1'
 	id 'maven-publish'
 }
 
@@ -12,6 +12,10 @@ base {
 
 loom {
 	accessWidenerPath = file("src/main/resources/vulkanmod.accesswidener")
+
+	mixin {
+		defaultRefmapName = "vulkanmod.refmap.json"
+	}
 }
 
 dependencies {
@@ -39,13 +43,9 @@ dependencies {
 }
 
 project.ext.lwjglVersion = "3.3.3"
-project.ext.jomlVersion = "1.10.4"
 
 dependencies {
-	// Vulkan — sem natives, Android usa libvulkan.so do sistema
 	include(implementation("org.lwjgl:lwjgl-vulkan:$lwjglVersion"))
-
-	// VMA e Shaderc — só o jar base, sem natives de nenhuma plataforma
 	include(implementation("org.lwjgl:lwjgl-vma:$lwjglVersion"))
 	include(implementation("org.lwjgl:lwjgl-shaderc:$lwjglVersion"))
 }
