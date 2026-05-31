@@ -15,12 +15,10 @@ loom {
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	ext.includeModule = { name ->
@@ -42,28 +40,14 @@ dependencies {
 
 project.ext.lwjglVersion = "3.3.3"
 project.ext.jomlVersion = "1.10.4"
-project.ext.winNatives = "natives-windows"
-project.ext.linuxNatives = "natives-linux"
-project.ext.macosNatives = "natives-macos"
-project.ext.macosArmNatives = "natives-macos-arm64"
 
 dependencies {
+	// Vulkan — sem natives, Android usa libvulkan.so do sistema
 	include(implementation("org.lwjgl:lwjgl-vulkan:$lwjglVersion"))
 
-	ext.includeNatives = { name ->
-		include(implementation("$name:$lwjglVersion"))
-		include(runtimeOnly("$name:$lwjglVersion:$winNatives"))
-		include(runtimeOnly("$name:$lwjglVersion:$linuxNatives"))
-		include(runtimeOnly("$name:$lwjglVersion:$macosNatives"))
-		include(runtimeOnly("$name:$lwjglVersion:$macosArmNatives"))
-	}
-
-	includeNatives("org.lwjgl:lwjgl-vma")
-	includeNatives("org.lwjgl:lwjgl-shaderc")
-
-	//MoltenVK
-	include(runtimeOnly("org.lwjgl:lwjgl-vulkan:$lwjglVersion:$macosNatives"))
-	include(runtimeOnly("org.lwjgl:lwjgl-vulkan:$lwjglVersion:$macosArmNatives"))
+	// VMA e Shaderc — só o jar base, sem natives de nenhuma plataforma
+	include(implementation("org.lwjgl:lwjgl-vma:$lwjglVersion"))
+	include(implementation("org.lwjgl:lwjgl-shaderc:$lwjglVersion"))
 }
 
 processResources {
@@ -79,9 +63,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
 	sourceCompatibility = JavaVersion.VERSION_21
@@ -94,7 +75,6 @@ jar {
 	}
 }
 
-// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
@@ -103,11 +83,5 @@ publishing {
 		}
 	}
 
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-	}
+	repositories {}
 }
