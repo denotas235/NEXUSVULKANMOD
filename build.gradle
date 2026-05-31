@@ -31,9 +31,7 @@ dependencies {
 	includeModule("fabric-renderer-api-v1")
 	includeModule("fabric-rendering-fluids-v1")
 
-	compileOnly("org.lwjgl:lwjgl-vulkan:3.3.3")
-	compileOnly("org.lwjgl:lwjgl-vma:3.3.3")
-	compileOnly("org.lwjgl:lwjgl-shaderc:3.3.3")
+    compileOnly fileTree(dir: 'src/main/resources/META-INF/jars', include: ['lwjgl-vulkan.jar', 'lwjgl-vma.jar', 'lwjgl-shaderc.jar', 'lwjgl.jar', 'lwjgl-spvc.jar'])
 }
 
 processResources {
