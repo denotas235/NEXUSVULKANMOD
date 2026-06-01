@@ -12,6 +12,14 @@ base {
 
 loom {
 	accessWidenerPath = file("src/main/resources/vulkanmod.accesswidener")
+
+	// CRITICAL: Loom 1.13+ generates the refmap under a different name unless
+	// this is explicitly set. Both vulkanmod.mixins.json and
+	// vulkanmod-astc.mixins.json declare "refmap": "vulkanmod.refmap.json" —
+	// without this, ALL @Shadow annotations with Mojang names fail at runtime.
+	mixin {
+		defaultRefmapName = "vulkanmod.refmap.json"
+	}
 }
 
 dependencies {
@@ -31,7 +39,7 @@ dependencies {
 	includeModule("fabric-renderer-api-v1")
 	includeModule("fabric-rendering-fluids-v1")
 
-    compileOnly fileTree(dir: 'src/main/resources/META-INF/jars', include: ['lwjgl-vulkan.jar', 'lwjgl-vma.jar', 'lwjgl-shaderc.jar', 'lwjgl.jar', 'lwjgl-spvc.jar'])
+	compileOnly fileTree(dir: 'src/main/resources/META-INF/jars', include: ['lwjgl-vulkan.jar', 'lwjgl-vma.jar', 'lwjgl-shaderc.jar', 'lwjgl.jar', 'lwjgl-spvc.jar'])
 }
 
 processResources {
