@@ -2,6 +2,7 @@ package net.vulkanmod.mixin.chunk;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.client.Camera;
@@ -90,9 +91,10 @@ public abstract class LevelRendererMixin {
     /**
      * @author
      * @reason
+     * Renamed from isSectionCompiled to isSectionCompiledAndVisible in MC 1.21.11
      */
     @Overwrite
-    public boolean isSectionCompiled(BlockPos blockPos) {
+    public boolean isSectionCompiledAndVisible(BlockPos blockPos) {
         return this.worldRenderer.isSectionCompiled(blockPos);
     }
 
@@ -113,8 +115,12 @@ public abstract class LevelRendererMixin {
         return null;
     }
 
-    @Redirect(method = "method_62214", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;)V"))
-    private void renderSectionLayer(ChunkSectionsToRender instance, ChunkSectionLayerGroup chunkSectionLayerGroup) {
+    /**
+     * Redirect renderGroup calls in the section rendering lambda.
+     * Signature updated for MC 1.21.11: renderGroup now takes a GpuSampler as second argument.
+     */
+    @Redirect(method = "method_62214", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
+    private void renderSectionLayer(ChunkSectionsToRender instance, ChunkSectionLayerGroup chunkSectionLayerGroup, GpuSampler gpuSampler) {
         if (chunkSectionLayerGroup == ChunkSectionLayerGroup.OPAQUE) {
             Profiler profiler = Profiler.getMainProfiler();
             profiler.push("Opaque_terrain");
