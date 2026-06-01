@@ -14,6 +14,8 @@ import net.vulkanmod.vulkan.util.VUtil;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -21,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public abstract class VRenderSystem {
+    private static final Logger LOGGER = LoggerFactory.getLogger("VRenderSystem");
     private static final float DEFAULT_DEPTH_VALUE = 1.0f;
 
     private static long window;
@@ -64,6 +67,11 @@ public abstract class VRenderSystem {
     private static float depthBiasSlope = 0.0f;
 
     public static void initRenderer() {
+        if (Boolean.getBoolean("vulkanmod.test.skip_vulkan")) {
+            LOGGER.info("[VulkanMod] [TEST] vulkanmod.test.skip_vulkan=true -- Vulkan init skipped");
+            return;
+        }
+
         Vulkan.initVulkan(window);
 
         setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
