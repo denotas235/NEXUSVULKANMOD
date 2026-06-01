@@ -48,8 +48,28 @@ jobs:
           echo "JAR: $JAR  ($(du -sh "$JAR" | cut -f1))"
           echo ""
 
-          # Check required files
-          for f in vulkanmod.mixins.json vulkanmod.refmap.json fabric.mod.json; do
+          # Diagnostic: list ALL JSON files in the JAR
+          echo "=== All JSON files in JAR ==="
+          unzip -l "$JAR" | grep "\.json" || echo "  (no JSON files)"
+          echo ""
+
+          # Find the refmap — Loom names it {archivesBaseName}-refmap.json
+          REFMAP=$(unzip -l "$JAR" | grep -oE '[^ ]+refmap\.json' | head -1)
+          if [[ -z "$REFMAP" ]]; then
+            echo "::error::No *-refmap.json found in JAR — Mixin @Shadow will fail at runtime"
+            exit 1
+          fi
+          echo "✓ refmap found: $REFMAP"
+          echo ""
+
+          # Count mapped mixin classes in refmap
+          CLASS_COUNT=$(unzip -p "$JAR" "$REFMAP" | grep -c '"mappings"' || echo 0)
+          echo "  Mapped mixin classes: $CLASS_COUNT"
+          echo ""
+
+          # Check required non-refmap files
+          MISSING=0
+          for f in vulkanmod.mixins.json fabric.mod.json; do
             if unzip -l "$JAR" | grep -q "$f"; then
               echo "✓ $f"
             else
@@ -57,18 +77,12 @@ jobs:
               MISSING=1
             fi
           done
-          [[ -z "$MISSING" ]] || exit 1
+          [[ "$MISSING" -eq 0 ]] || exit 1
 
           # Show embedded LWJGL JARs (ZalithLauncher2 runtime)
           echo ""
           echo "Embedded JARs:"
           unzip -l "$JAR" | grep "META-INF/jars/" || echo "  (none)"
-
-          # Show refmap class count
-          echo ""
-          echo "refmap contents:"
-          unzip -p "$JAR" vulkanmod.refmap.json | \
-            grep -o '"[^"]*": {' | wc -l | xargs -I{} echo "  {} mapped mixin classes"
 
           cp "$JAR" build/libs/VulkanMod.jar
 
@@ -80,16 +94,12 @@ jobs:
           if-no-files-found: error
 
   # ══════════════════════════════════════════════════════════════════════════
-  # Job 2 — Headless Mixin validation
-  #   Launches the game on a virtual framebuffer with skip_vulkan=true so
-  #   Mixin applies all injectors without needing a GPU or display driver.
-  #   Failure patterns (Shadow, refmap, crash) detected by analyse_log.py.
+  # Job 2 — Headless Mixin validation (no GPU required)
   # ══════════════════════════════════════════════════════════════════════════
   mixin-validate:
     name: Mixin validation (headless)
-    runs-on: ubuntu-22.04
     needs: build
-
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -111,53 +121,35 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Install Xvfb (virtual display)
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y xvfb 2>/dev/null
+      - name: Install Xvfb
+        run: sudo apt-get install -y xvfb
 
-      - name: Prepare Gradle caches (download assets)
-        run: ./gradlew downloadAssets --no-daemon -q || true
-
-      - name: Run headless Mixin check
-        timeout-minutes: 4
-        id: mixin_run
-        continue-on-error: true
+      # Run the Fabric loader in headless mode with the skip_vulkan guard.
+      # The JVM will load, apply all Mixins, then exit when Vulkan init is
+      # skipped — any @Shadow resolution failure or VerifyError is fatal
+      # and appears in game.log before the guard fires.
+      - name: Run headless Mixin load
+        timeout-minutes: 5
         run: |
-          export DISPLAY=:99
+          ./gradlew genSources --no-daemon -q || true
+          mkdir -p run
           Xvfb :99 -screen 0 640x480x24 &
-          XVFB_PID=$!
+          DISPLAY=:99 ./gradlew runClient \
+            --no-daemon \
+            -Dvulkanmod.test.skip_vulkan=true \
+            -Djava.awt.headless=true \
+            2>&1 | tee run/game.log || true
 
-          # -Dvulkanmod.test.skip_vulkan=true prevents Vulkan.initVulkan() from running.
-          # The game exits with non-zero (expected — no GPU) but Mixin applies first.
-          timeout 90 ./gradlew runClient --no-daemon \
-            -Pvulkanmod.test.skip_vulkan=true \
-            --args="--width 1 --height 1" \
-            2>&1 | tee mc_run.log || true
-
-          kill "$XVFB_PID" 2>/dev/null || true
-          echo "headless_done=true" >> "$GITHUB_OUTPUT"
-
-      - name: Analyse log for Mixin failures
-        run: python3 .github/scripts/analyse_log.py mc_run.log
-
-      - name: Upload run log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mixin-validate-log
-          path: mc_run.log
-          if-no-files-found: ignore
+      - name: Analyse game log for Mixin errors
+        run: python3 .github/scripts/analyse_log.py run/game.log
 
   # ══════════════════════════════════════════════════════════════════════════
-  # Job 3 — Final release JAR (only if build + validation pass)
+  # Job 3 — Final release JAR (only if both jobs pass)
   # ══════════════════════════════════════════════════════════════════════════
   release-jar:
     name: Final release JAR
-    runs-on: ubuntu-22.04
     needs: [build, mixin-validate]
-    if: success()
-
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -179,27 +171,13 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Final build
+      - name: Build final JAR
         run: ./gradlew build --no-daemon
 
-      - name: Summarise JAR
-        run: |
-          JAR=$(ls build/libs/VulkanMod_*.jar | grep -v sources | head -1)
-          echo "## VulkanMod Final JAR" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Key | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-----|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| File | \`$(basename "$JAR")\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Size | $(du -sh "$JAR" | cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
-          REFMAP_CLASSES=$(unzip -p "$JAR" vulkanmod.refmap.json | grep -o '"[^"]*": {' | wc -l || echo 0)
-          echo "| Mixin classes in refmap | $REFMAP_CLASSES |" >> "$GITHUB_STEP_SUMMARY"
-          LWJGL_JARS=$(unzip -l "$JAR" | grep "META-INF/jars/" | grep -c "\.jar" || echo 0)
-          echo "| Embedded LWJGL JARs | $LWJGL_JARS |" >> "$GITHUB_STEP_SUMMARY"
-          cp "$JAR" build/libs/VulkanMod-release.jar
-
-      - name: Upload final JAR
+      - name: Upload release JAR
         uses: actions/upload-artifact@v4
         with:
-          name: VulkanMod-FINAL
-          path: build/libs/VulkanMod-release.jar
-          retention-days: 30
+          name: VulkanMod-release
+          path: build/libs/VulkanMod_*.jar
           if-no-files-found: error
+          exclude: "**/*-sources.jar"
