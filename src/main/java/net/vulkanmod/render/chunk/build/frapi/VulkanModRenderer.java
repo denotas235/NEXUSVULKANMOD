@@ -66,7 +66,7 @@ public class VulkanModRenderer implements Renderer {
 			float green = (tint >> 8 & 255) / 255.0F;
 			float blue = (tint & 255) / 255.0F;
 			FabricBlockModelRenderer.render(poseStack.last(), layer -> multiBufferSource.getBuffer(RenderLayerHelper.getEntityBlockLayer(layer)), model, red, green, blue, light, overlay, blockAndTintGetter, pos, blockState);
-            ((BlockRenderDispatcherAccessor) blockRenderDispatcher).getBlockEntityModelsGetter().get().renderByBlock(blockState.getBlock(), ItemDisplayContext.NONE, poseStack, Minecraft.getInstance().gameRenderer.getSubmitNodeStorage(), light, overlay, 0);
+            Minecraft.getInstance().getModelManager().specialBlockModelRenderer().renderByBlock(blockState.getBlock(), ItemDisplayContext.NONE, poseStack, Minecraft.getInstance().gameRenderer.getSubmitNodeStorage(), light, overlay, 0);
 		}
 	}
 
