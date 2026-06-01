@@ -14,7 +14,7 @@
   "entrypoints": {
     "client": ["net.vulkanmod.Initializer"]
   },
-  "mixins": ["vulkanmod.mixins.json"],
+  "mixins": ["vulkanmod.mixins.json", "vulkanmod-astc.mixins.json"],
   "accessWidener": "vulkanmod.accesswidener",
   "depends": {
     "fabricloader": ">=0.14.14",
