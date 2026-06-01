@@ -4,14 +4,12 @@
   "package": "net.vulkanmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "plugin": "net.vulkanmod.mixin.MixinPlugin",
-  "refmap": "vulkanmod.refmap.json",
-  "mixins": [
-  ],
+  "refmap": "VulkanMod_1.21.11-refmap.json",
+  "mixins": [],
   "client": [
     "window.ScreenManagerMixin",
     "window.WindowMixin",
     "window.WindowAccessor",
-
     "chunk.ClientPacketListenerM",
     "chunk.ClientChunkCacheM",
     "chunk.DirectionMixin",
@@ -21,29 +19,23 @@
     "chunk.SectionRenderDispatcherM",
     "chunk.ViewAreaM",
     "chunk.VisibilitySetMixin",
-
     "compatibility.gl.GL11M",
     "compatibility.gl.GL14M",
     "compatibility.gl.GL15M",
     "compatibility.gl.GL30M",
-
     "debug.crash_report.SystemReportM",
     "debug.DebugEntryMemoryM",
     "debug.DebugEntrySystemSpecsM",
     "debug.DebugScreenEntriesM",
     "debug.KeyboardHandlerM",
-
     "fix.MainMixin",
-
     "matrix.Matrix4fM",
     "matrix.PoseAccessor",
-
     "profiling.ClientMetricsSamplersProviderMixin",
     "profiling.GuiMixin",
     "profiling.KeyboardHandlerM",
     "profiling.LevelRendererMixin",
     "profiling.TimerQueryM",
-
     "render.CompositeStateAccessor",
     "render.CompositeRenderTypeM",
     "render.FogRendererMixin",
@@ -82,30 +74,23 @@
     "render.vertex.BufferBuilderM",
     "render.vertex.IndexTypeMixin",
     "render.vertex.VertexFormatMixin",
-
     "render.chunk.MaliCullingMixin",
-
     "screen.ScreenM",
     "screen.OptionsScreenM",
-
     "texture.mip.MipmapGeneratorM",
     "texture.image.NativeImageAccessor",
     "texture.update.MLightTexture",
     "texture.update.MTextureManager",
     "util.ScreenshotMixin",
-
     "vertex.EntityOutlineGeneratorM",
     "vertex.SpriteCoordinateExpanderM",
     "vertex.VertexMultiConsumersM$DoubleM",
     "vertex.VertexMultiConsumersM$MultipleM",
     "vertex.VertexMultiConsumersM$SheetDecalM",
-
     "wayland.InputConstantsM",
     "wayland.KeyboardHandlerM",
     "wayland.MinecraftMixin",
-
     "compatibility.PostPassM",
-
     "voxel.VoxelShapeMixin"
   ],
   "injectors": {
