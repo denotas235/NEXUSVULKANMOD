@@ -1,6 +1,5 @@
 package net.vulkanmod.astc;
 
-import static org.lwjgl.vulkan.EXTTextureCompressionAstcHdr.VK_FORMAT_ASTC_4X4_SFLOAT_BLOCK_EXT;
 import static org.lwjgl.vulkan.VK10.*;
 
 /**
@@ -10,14 +9,19 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class ASTCFormatSelector {
 
-    // ASTC VkFormat constants (Vulkan 1.0+)
+    // ASTC LDR VkFormat constants (Vulkan 1.0 core — always available via VK10)
     public static final int ASTC_4x4_UNORM  = VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
     public static final int ASTC_4x4_SRGB   = VK_FORMAT_ASTC_4x4_SRGB_BLOCK;
     public static final int ASTC_6x6_UNORM  = VK_FORMAT_ASTC_6x6_UNORM_BLOCK;
     public static final int ASTC_6x6_SRGB   = VK_FORMAT_ASTC_6x6_SRGB_BLOCK;
     public static final int ASTC_8x8_UNORM  = VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
     public static final int ASTC_8x8_SRGB   = VK_FORMAT_ASTC_8x8_SRGB_BLOCK;
-    public static final int ASTC_4x4_SFLOAT = VK_FORMAT_ASTC_4X4_SFLOAT_BLOCK_EXT;
+
+    // ASTC HDR SFLOAT — VK_FORMAT_ASTC_4X4_SFLOAT_BLOCK_EXT = 1000066000
+    // Defined as literal to avoid dependency on EXTTextureCompressionAstcHdr
+    // which may not be present in all bundled LWJGL versions.
+    // Reference: https://registry.khronos.org/vulkan/specs/latest/man/html/VkFormat.html
+    public static final int ASTC_4x4_SFLOAT = 1000066000; // VK_FORMAT_ASTC_4X4_SFLOAT_BLOCK_EXT
 
     /**
      * Select the best ASTC format for a texture identified by its resource path.
@@ -45,7 +49,7 @@ public class ASTCFormatSelector {
             return srgb ? ASTC_4x4_SRGB : ASTC_4x4_UNORM;
         }
 
-        // Normal maps — high precision
+        // Normal maps — high precision, linear
         if (lower.contains("normal") || lower.contains("_n.") || lower.contains("_normal")) {
             return ASTC_4x4_UNORM;
         }
@@ -61,7 +65,7 @@ public class ASTCFormatSelector {
     }
 
     /**
-     * Convenience overload, assumes sRGB for colour textures.
+     * Convenience overload — assumes sRGB for colour textures.
      */
     public static int selectFormat(String texturePath) {
         return selectFormat(texturePath, true);
