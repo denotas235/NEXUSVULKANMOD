@@ -3,9 +3,8 @@
   "minVersion": "0.8",
   "package": "net.vulkanmod.astc.mixin",
   "compatibilityLevel": "JAVA_21",
-  "refmap": "vulkanmod.refmap.json",
-  "mixins": [
-  ],
+  "refmap": "VulkanMod_1.21.11-refmap.json",
+  "mixins": [],
   "client": [
     "TextureUploadMixin",
     "NativeImageMixin"
