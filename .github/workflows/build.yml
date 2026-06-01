@@ -49,25 +49,14 @@ jobs:
           echo ""
 
           # Diagnostic: list ALL JSON files in the JAR
-          echo "=== All JSON files in JAR ==="
+          # NOTE: Loom 1.13 new AP embeds mixin remapping data directly into
+          # class bytecode during remapJar — no separate *-refmap.json is
+          # written to the JAR. This is expected & correct.
+          echo "=== JSON files in JAR ==="
           unzip -l "$JAR" | grep "\.json" || echo "  (no JSON files)"
           echo ""
 
-          # Find the refmap — Loom names it {archivesBaseName}-refmap.json
-          REFMAP=$(unzip -l "$JAR" | grep -oE '[^ ]+refmap\.json' | head -1)
-          if [[ -z "$REFMAP" ]]; then
-            echo "::error::No *-refmap.json found in JAR — Mixin @Shadow will fail at runtime"
-            exit 1
-          fi
-          echo "✓ refmap found: $REFMAP"
-          echo ""
-
-          # Count mapped mixin classes in refmap
-          CLASS_COUNT=$(unzip -p "$JAR" "$REFMAP" | grep -c '"mappings"' || echo 0)
-          echo "  Mapped mixin classes: $CLASS_COUNT"
-          echo ""
-
-          # Check required non-refmap files
+          # Check required files
           MISSING=0
           for f in vulkanmod.mixins.json fabric.mod.json; do
             if unzip -l "$JAR" | grep -q "$f"; then
@@ -124,14 +113,12 @@ jobs:
       - name: Install Xvfb
         run: sudo apt-get install -y xvfb
 
-      # Run the Fabric loader in headless mode with the skip_vulkan guard.
-      # The JVM will load, apply all Mixins, then exit when Vulkan init is
-      # skipped — any @Shadow resolution failure or VerifyError is fatal
-      # and appears in game.log before the guard fires.
+      # Run the Fabric loader headless with skip_vulkan guard.
+      # All Mixins are applied before Vulkan init, so any @Shadow resolution
+      # failure or VerifyError is fatal and appears in game.log first.
       - name: Run headless Mixin load
         timeout-minutes: 5
         run: |
-          ./gradlew genSources --no-daemon -q || true
           mkdir -p run
           Xvfb :99 -screen 0 640x480x24 &
           DISPLAY=:99 ./gradlew runClient \
