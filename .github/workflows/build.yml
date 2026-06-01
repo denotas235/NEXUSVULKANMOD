@@ -1,60 +1,205 @@
-name: build
-on: [pull_request, push, workflow_dispatch]
+name: CI — Build & Validate
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
 
 jobs:
+  # ══════════════════════════════════════════════════════════════════════════
+  # Job 1 — Compile + package
+  # ══════════════════════════════════════════════════════════════════════════
   build:
-    strategy:
-      matrix:
-        java: [
-          21,
-        ]
+    name: Build
     runs-on: ubuntu-22.04
     steps:
-      - name: checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: setup jdk ${{ matrix.java }}
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java }}
-          distribution: 'microsoft'
+          java-version: 21
+          distribution: microsoft
 
-      - name: make gradle wrapper executable
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: build
-        run: ./gradlew build
+      - name: Build
+        run: ./gradlew build --no-daemon
 
-      - name: verify JAR contents
-        if: ${{ matrix.java == '21' }}
+      # ── Verify JAR has all required files ──────────────────────────────
+      - name: Verify JAR contents
         run: |
-          JAR=$(ls build/libs/VulkanMod_*.jar | grep -v sources | head -1)
-          echo "=== Output JAR: $JAR ==="
-          if [ ! -f "$JAR" ]; then
-            echo "❌ No output JAR found"
-            exit 1
+          JAR=$(ls build/libs/VulkanMod_*.jar 2>/dev/null | grep -v sources | head -1)
+          if [[ -z "$JAR" || ! -f "$JAR" ]]; then
+            echo "::error::No output JAR produced"; exit 1
           fi
-          echo "✅ JAR exists: $(du -sh "$JAR" | cut -f1)"
+          echo "JAR: $JAR  ($(du -sh "$JAR" | cut -f1))"
           echo ""
-          echo "--- JSON files in JAR ---"
-          unzip -l "$JAR" | grep "\.json"
+
+          # Check required files
+          for f in vulkanmod.mixins.json vulkanmod.refmap.json fabric.mod.json; do
+            if unzip -l "$JAR" | grep -q "$f"; then
+              echo "✓ $f"
+            else
+              echo "::error::$f MISSING from JAR"
+              MISSING=1
+            fi
+          done
+          [[ -z "$MISSING" ]] || exit 1
+
+          # Show embedded LWJGL JARs (ZalithLauncher2 runtime)
           echo ""
-          if ! unzip -l "$JAR" | grep -q "vulkanmod.mixins.json"; then
-            echo "❌ vulkanmod.mixins.json missing from JAR"
-            exit 1
-          fi
-          echo "✅ vulkanmod.mixins.json present in JAR"
+          echo "Embedded JARs:"
+          unzip -l "$JAR" | grep "META-INF/jars/" || echo "  (none)"
+
+          # Show refmap class count
           echo ""
-          echo "--- LWJGL jars embedded ---"
-          unzip -l "$JAR" | grep "META-INF/jars" || echo "(none)"
-          echo ""
-          # Copy JAR to a predictable output path
+          echo "refmap contents:"
+          unzip -p "$JAR" vulkanmod.refmap.json | \
+            grep -o '"[^"]*": {' | wc -l | xargs -I{} echo "  {} mapped mixin classes"
+
           cp "$JAR" build/libs/VulkanMod.jar
 
-      - name: upload mod JAR
-        if: ${{ matrix.java == '21' }}
+      - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
           name: VulkanMod
           path: build/libs/VulkanMod.jar
+          if-no-files-found: error
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Job 2 — Headless Mixin validation
+  #   Launches the game on a virtual framebuffer with skip_vulkan=true so
+  #   Mixin applies all injectors without needing a GPU or display driver.
+  #   Failure patterns (Shadow, refmap, crash) detected by analyse_log.py.
+  # ══════════════════════════════════════════════════════════════════════════
+  mixin-validate:
+    name: Mixin validation (headless)
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: microsoft
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Install Xvfb (virtual display)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb 2>/dev/null
+
+      - name: Prepare Gradle caches (download assets)
+        run: ./gradlew downloadAssets --no-daemon -q || true
+
+      - name: Run headless Mixin check
+        timeout-minutes: 4
+        id: mixin_run
+        continue-on-error: true
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 640x480x24 &
+          XVFB_PID=$!
+
+          # -Dvulkanmod.test.skip_vulkan=true prevents Vulkan.initVulkan() from running.
+          # The game exits with non-zero (expected — no GPU) but Mixin applies first.
+          timeout 90 ./gradlew runClient --no-daemon \
+            -Pvulkanmod.test.skip_vulkan=true \
+            --args="--width 1 --height 1" \
+            2>&1 | tee mc_run.log || true
+
+          kill "$XVFB_PID" 2>/dev/null || true
+          echo "headless_done=true" >> "$GITHUB_OUTPUT"
+
+      - name: Analyse log for Mixin failures
+        run: python3 .github/scripts/analyse_log.py mc_run.log
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mixin-validate-log
+          path: mc_run.log
+          if-no-files-found: ignore
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Job 3 — Final release JAR (only if build + validation pass)
+  # ══════════════════════════════════════════════════════════════════════════
+  release-jar:
+    name: Final release JAR
+    runs-on: ubuntu-22.04
+    needs: [build, mixin-validate]
+    if: success()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: microsoft
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Final build
+        run: ./gradlew build --no-daemon
+
+      - name: Summarise JAR
+        run: |
+          JAR=$(ls build/libs/VulkanMod_*.jar | grep -v sources | head -1)
+          echo "## VulkanMod Final JAR" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Key | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| File | \`$(basename "$JAR")\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Size | $(du -sh "$JAR" | cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+          REFMAP_CLASSES=$(unzip -p "$JAR" vulkanmod.refmap.json | grep -o '"[^"]*": {' | wc -l || echo 0)
+          echo "| Mixin classes in refmap | $REFMAP_CLASSES |" >> "$GITHUB_STEP_SUMMARY"
+          LWJGL_JARS=$(unzip -l "$JAR" | grep "META-INF/jars/" | grep -c "\.jar" || echo 0)
+          echo "| Embedded LWJGL JARs | $LWJGL_JARS |" >> "$GITHUB_STEP_SUMMARY"
+          cp "$JAR" build/libs/VulkanMod-release.jar
+
+      - name: Upload final JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: VulkanMod-FINAL
+          path: build/libs/VulkanMod-release.jar
+          retention-days: 30
           if-no-files-found: error
