@@ -1,51 +1,71 @@
 package net.vulkanmod.astc.precompile;
 
-import org.gradle.api.DefaultTask;
-import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.tasks.*;
-
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.util.HexFormat;
 
 /**
- * Gradle task that pre-encodes PNG textures to ASTC during the build.
+ * Standalone ASTC pre-compilation utility (no Gradle API dependency).
  *
- * Registered in build.gradle as:
- *   tasks.register('precompileAstc', ASTCPrecompileTask) {
- *       inputDir  = file('src/main/resources/assets')
- *       outputDir = file('build/astc-textures')
+ * Can be invoked from the command line to pre-encode PNG assets:
+ *   java -cp VulkanMod.jar net.vulkanmod.astc.precompile.ASTCPrecompileTask \
+ *        <inputDir> <outputDir> [maxAgeDays]
+ *
+ * Or wired up in build.gradle via a JavaExec task (no buildSrc needed):
+ *
+ *   tasks.register('precompileAstc', JavaExec) {
+ *       classpath = sourceSets.main.runtimeClasspath
+ *       mainClass = 'net.vulkanmod.astc.precompile.ASTCPrecompileTask'
+ *       args = [
+ *           file('src/main/resources/assets').absolutePath,
+ *           file('build/astc-textures').absolutePath
+ *       ]
  *   }
  *   processResources.dependsOn precompileAstc
  *
- * Requires the {@code astcenc} CLI tool on PATH. Skips silently if not found.
- * Encoding is incremental: PNGs that have not changed since last run are skipped.
+ * Requires the {@code astcenc} CLI tool to be on PATH.
+ * Silently skips encoding if astcenc is not found.
+ * Incremental: output files newer than their source are skipped.
  */
-@CacheableTask
-public abstract class ASTCPrecompileTask extends DefaultTask {
+public class ASTCPrecompileTask {
 
-    @InputDirectory
-    @PathSensitive(PathSensitivity.RELATIVE)
-    public abstract DirectoryProperty getInputDir();
+    private final Path inputRoot;
+    private final Path outputRoot;
+    private final int maxAgeDays;
 
-    @OutputDirectory
-    public abstract DirectoryProperty getOutputDir();
+    public ASTCPrecompileTask(Path inputRoot, Path outputRoot, int maxAgeDays) {
+        this.inputRoot  = inputRoot;
+        this.outputRoot = outputRoot;
+        this.maxAgeDays = maxAgeDays;
+    }
 
-    @TaskAction
-    public void encode() throws IOException {
-        // Check if astcenc CLI is available
+    /** Entry point for CLI / JavaExec invocation. */
+    public static void main(String[] args) {
+        if (args.length < 2) {
+            System.err.println("Usage: ASTCPrecompileTask <inputDir> <outputDir> [maxAgeDays]");
+            System.exit(1);
+        }
+        Path input  = Path.of(args[0]);
+        Path output = Path.of(args[1]);
+        int days = args.length > 2 ? Integer.parseInt(args[2]) : 30;
+
+        try {
+            new ASTCPrecompileTask(input, output, days).run();
+        } catch (Exception e) {
+            System.err.println("[ASTC] Pre-compile failed: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public void run() throws IOException {
         if (!isAstcencAvailable()) {
-            getProject().getLogger().lifecycle("[ASTC] astcenc não encontrado no PATH — tarefa ignorada");
+            System.out.println("[ASTC] astcenc not found on PATH — skipping pre-compile");
             return;
         }
 
-        Path inputRoot  = getInputDir().get().getAsFile().toPath();
-        Path outputRoot = getOutputDir().get().getAsFile().toPath();
         Files.createDirectories(outputRoot);
-
-        int[] counts = {0, 0}; // [encoded, skipped]
+        int[] counts = {0, 0};   // [encoded, skipped]
+        long[] bytes  = {0};
 
         Files.walkFileTree(inputRoot, new SimpleFileVisitor<>() {
             @Override
@@ -53,50 +73,58 @@ public abstract class ASTCPrecompileTask extends DefaultTask {
                 String name = file.getFileName().toString();
                 if (!name.toLowerCase().endsWith(".png")) return FileVisitResult.CONTINUE;
 
-                Path relative  = inputRoot.relativize(file);
+                Path relative   = inputRoot.relativize(file);
                 Path outputFile = outputRoot.resolve(relative.toString().replace(".png", ".astc"));
                 Files.createDirectories(outputFile.getParent());
 
-                // Incremental: skip if output is newer than input
                 if (Files.exists(outputFile) &&
-                        Files.getLastModifiedTime(outputFile).compareTo(Files.getLastModifiedTime(file)) > 0) {
+                        Files.getLastModifiedTime(outputFile).compareTo(
+                                Files.getLastModifiedTime(file)) > 0) {
                     counts[1]++;
                     return FileVisitResult.CONTINUE;
                 }
 
-                // Select block size from path heuristic
-                String blockSize = selectBlockSize(relative.toString());
+                String block = selectBlockSize(relative.toString());
+                try {
+                    int result = new ProcessBuilder(
+                            "astcenc", "-cl",
+                            file.toString(), outputFile.toString(),
+                            block, "thorough")
+                            .redirectErrorStream(true)
+                            .start()
+                            .waitFor();
 
-                int result = new ProcessBuilder(
-                        "astcenc", "-cl", file.toString(), outputFile.toString(), blockSize, "thorough")
-                        .redirectErrorStream(true)
-                        .start()
-                        .waitFor();
-
-                if (result == 0) {
-                    counts[0]++;
-                } else {
-                    getProject().getLogger().warn("[ASTC] Falha ao codificar: {}", file);
+                    if (result == 0) {
+                        counts[0]++;
+                        bytes[0] += Files.size(outputFile);
+                    } else {
+                        System.err.printf("[ASTC] Failed to encode: %s%n", file);
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return FileVisitResult.TERMINATE;
                 }
                 return FileVisitResult.CONTINUE;
             }
         });
 
-        getProject().getLogger().lifecycle("[ASTC] Pré-compilação: {} codificados, {} ignorados",
-                counts[0], counts[1]);
+        System.out.printf("[ASTC] Pre-compile done: %d encoded (%.1f KB), %d skipped%n",
+                counts[0], bytes[0] / 1024.0, counts[1]);
     }
 
     private static String selectBlockSize(String path) {
         String lc = path.toLowerCase();
         if (lc.contains("gui") || lc.contains("font") || lc.contains("item")) return "4x4";
-        if (lc.contains("environment") || lc.contains("sky")) return "8x8";
+        if (lc.contains("environment") || lc.contains("sky"))                 return "8x8";
         return "6x6";
     }
 
     private static boolean isAstcencAvailable() {
         try {
             return new ProcessBuilder("astcenc", "--help")
-                    .start().waitFor() == 0;
+                    .redirectErrorStream(true)
+                    .start()
+                    .waitFor() == 0;
         } catch (Exception e) {
             return false;
         }
