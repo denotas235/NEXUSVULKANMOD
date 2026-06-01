@@ -4,7 +4,7 @@
   "package": "net.vulkanmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "plugin": "net.vulkanmod.mixin.MixinPlugin",
-  "refmap": "VulkanMod_1.21.11-refmap.json",
+  "refmap": "vulkanmod.refmap.json",
   "mixins": [],
   "client": [
     "window.ScreenManagerMixin",
