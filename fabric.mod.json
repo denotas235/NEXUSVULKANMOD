@@ -22,34 +22,12 @@
     "vulkanmod.mixins.json"
   ],
   "accessWidener": "vulkanmod.accesswidener",
-  "jars": [
-    {
-      "file": "META-INF/jars/lwjgl-vulkan.jar"
-    },
-    {
-      "file": "META-INF/jars/lwjgl-vma.jar"
-    },
-    {
-      "file": "META-INF/jars/lwjgl-shaderc.jar"
-    },
-    {
-      "file": "META-INF/jars/lwjgl.jar"
-    },
-    {
-      "file": "META-INF/jars/lwjgl-spvc.jar"
-    },
-    {
-      "file": "META-INF/jars/fabric-api-base-1.0.5+4ebb5c083e.jar"
-    },
-    {
-      "file": "META-INF/jars/fabric-renderer-api-v1-8.0.3+f4ffd2e53e.jar"
-    },
-    {
-      "file": "META-INF/jars/fabric-rendering-fluids-v1-3.1.43+4ebb5c083e.jar"
-    }
-  ],
+  "jars": [],
   "depends": {
     "fabricloader": ">=0.14.14",
+    "fabric-api-base": ">=1.0.5",
+    "fabric-renderer-api-v1": ">=8.0.3",
+    "fabric-rendering-fluids-v1": ">=3.1.43",
     "minecraft": "1.21.11"
   },
   "custom": {
