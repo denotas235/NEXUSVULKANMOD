@@ -49,12 +49,8 @@
     }
   ],
   "depends": {
-    "fabricloader": "\u003e\u003d0.14.14",
-    "minecraft": [
-      "1.21.9",
-      "1.21.10",
-      "1.21.11"
-    ]
+    "fabricloader": ">=0.14.14",
+    "minecraft": "1.21.11"
   },
   "custom": {
     "fabric-renderer-api-v1:contains_renderer": true
