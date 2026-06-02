@@ -101,7 +101,7 @@ public abstract class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void updateMatrices(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker,
                                 boolean bl, Camera camera, Matrix4f modelView, Matrix4f projection, Matrix4f matrix4f,
-                                GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci) {
+                                GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, long namespace, CallbackInfo ci) {
         this.modelView = modelView;
         this.projection = projection;
     }
